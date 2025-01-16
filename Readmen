@@ -1,0 +1,4 @@
+En caso de que no se le cree la carpeta migrations ejecutar el siguiente comando
+python manage.py makemigrations <<nombre_del_proyecto_donde_quieres_que_se_ubique_la_carpeta>>
+
+ejemplo: python manage.py makemigrations  base
