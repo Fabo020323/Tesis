@@ -1,0 +1,404 @@
+{% extends 'template_base.html' %}
+{% load custom_tags %}
+{% load static %}
+
+{% block tittle %}
+    Listado de Usuarios
+{% endblock %}
+
+{% block extracss %}
+    <link href="{% static 'libs/multiselect/css/multi-select.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'libs/selectize/css/selectize.bootstrap3.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'libs/select2/css/select2.min.css' %}" rel="stylesheet" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+    {% if perms.envios.list_customuser  %}
+        <div class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <div class="row justify-content-between mb-2">
+                                    <div class="col-auto">
+                                        {% if q %}
+                                            <form method="GET" name="search_usuario"
+                                                    {% safe_url 'usuarios_listado' as usuarios_listado_url %}
+                                                  action="{{ usuarios_listado_url }}"
+                                                  class="search-bar position-relative mb-sm-0 mb-2 d-flex align-items-center">
+                                                <input type="text"
+                                                       name="q"
+                                                       class="form-control"
+                                                       placeholder="Buscar..."
+                                                       value="{{ request.GET.q }}"/>
+                                                <a href="{{ usuarios_listado_url }}">
+                                                    <span class="mdi mdi-close-circle"></span>
+                                                </a>
+                                            </form>
+                                        {% else %}
+                                            <form method="GET" name="search_usuario"
+                                                  action="{{ usuarios_listado_url }}"
+                                                  class="search-bar position-relative mb-sm-0 mb-2">
+                                                <input type="text"
+                                                       name="q"
+                                                       class="form-control"
+                                                       placeholder="Buscar..."/>
+                                                <span class="mdi mdi-magnify"></span>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                    {% if perms.envios.add_customuser %}
+                                        <div class="col-auto">
+                                            <form action="" method="post">
+                                                <div class="text-md-end">
+                                                    <button type="button"
+                                                            class="btn btn-success waves-effect waves-light"
+                                                            onclick="abrir_creacion()">
+                                                        <i class="mdi mdi-account-plus" style="margin-right: 5px"></i>
+                                                        <span class="d-none d-md-inline">Nuevo Usuario</span>
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-centered table-hover dt-responsive nowrap w-100"
+                                           id="usuarios-datatable">
+                                        <thead>
+                                        <tr class="odd">
+                                            <th>Usuario</th>
+                                            <th>Nombres y Apellidos</th>
+                                            <th>Teléfono</th>
+                                            <th>Grupos</th>
+                                            {% if perms.envios.change_customuser or perms.envios.delete_customuser %}
+                                                <th class="text-center" style="width: 200px;">Acción</th>
+                                            {% endif %}
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for usuario in object_list %}
+                                            <tr>
+                                                <td>
+                                                    <img src="{{ usuario.imagen.url }}" alt="contact-img"
+                                                             title="contact-img" class="rounded me-3" height="48"
+                                                             width="48">
+                                                    <p class="m-0 d-inline-block align-middle font-16">
+                                                    {{ usuario.username }}<br/>
+                                                    </p>
+                                                </td>
+                                                <td>{{ usuario.get_full_names }}</td>
+                                                <td>{{ usuario.telefono }}</td>
+                                                <td>
+                                                    {{usuario.get_rules}}
+                                                </td>
+                                                {% if perms.envios.change_customuser or perms.envios.delete_customuser %}
+                                                    <td class="text-center">
+                                                        {% if perms.envios.change_customuser %}
+                                                            <button onclick="abrir_edicion({{ usuario.pk }})"
+                                                                    style="border: none;"
+                                                                    class="btn btn-outline-blue rounded-pill waves-effect waves-light BotonEditar"
+                                                                    data-value="{{ usuario.pk }}">
+                                                                <i class="mdi mdi-square-edit-outline"></i>
+                                                            </button>
+                                                        {% endif %}
+                                                        {% if  perms.envios.delete_customuser %}
+                                                            {% safe_url 'eliminar_usuario' usuario.pk as eliminar_usuario_url %}
+                                                            <button id="BotonEliminar"
+                                                                    onclick="abrir_eliminacion('{{ eliminar_usuario_url }}')"
+                                                                    style="border: none;"
+                                                                    class="btn btn-outline-danger rounded-pill waves-effect waves-light">
+                                                                <i class="mdi mdi-delete"></i>
+                                                            </button>
+                                                        {% endif %}
+                                                    </td>
+                                                {% endif %}
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    {% include 'pagination.html' %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if perms.envios.add_customuser %}
+                <div class="modal fade" id="crear" role="dialog">
+                    {% safe_url 'crear_usuario' as crear_ususario_url %}
+                    <form action="{{ crear_ususario_url }}" method="post" enctype="multipart/form-data">
+                        <div class="modal-dialog modal-xl" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header bg-success text-white">
+                                    <h2 class="card-title mb-0 text-white">Nuevo Usuario</h2>
+                                    <button class="btn-close" type="button" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    {% csrf_token %}
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3 d-flex justify-content-center align-items-center">
+                                            <img src="/media/default/spiderman.jpg" id="imagen-preview" class="preview-image"
+                                                 alt="Imagen actual" style="max-width: 100px; max-height: 100px;">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="imagen" class="form-label">Imagen de Usuario</label>
+                                            <input type="file" class="form-control" id="imagen" name="imagen">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="id_username" class="form-label">Usuario</label>
+                                            {{ form.username }}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="id_first_name" class="form-label">Nombres</label>
+                                            {{ form.first_name }}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="id_last_name" class="form-label">Apellidos</label>
+                                            {{ form.last_name }}
+                                        </div>
+
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="id_email" class="form-label">Correo</label>
+                                            {{ form.email }}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="id_telefono" class="form-label">Teléfono Móvil</label>
+                                            {{ form.telefono }}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="id_password" class="form-label">Contraseña</label>
+                                            {{ form.password }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="id_group" class="form-label">Grupo</label>
+                                            <select name="group" class="form-control" autocomplete="off" required=""
+                                                    id="id_group">
+                                                {% for group in form.group %}
+                                                    <option value={{ group.pk }}>{{ group }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-danger" type="button" data-bs-dismiss="modal">Cancelar
+                                    </button>
+                                    <button class="btn btn-success" type="submit">
+                                        Confirmar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            {% endif %}
+            {% if perms.envios.change_customuser  %}
+                <div class="modal fade" id="editar" role="dialog">
+                    <form action="#" method="post" id="form-editar_usuario"
+                          enctype="multipart/form-data">
+                        <div class="modal-dialog modal-xl" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header bg-success text-white">
+                                    <h2 class="card-title mb-0 text-white">Editar Usuario {{ object.username }}</h2>
+                                    <button class="btn-close" type="button" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    {% csrf_token %}
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3 d-flex justify-content-center align-items-center">
+                                            <img src="/media/default/spiderman.jpg" id="imagen-preview_u" class="preview-image_u"
+                                                 alt="Imagen actual" style="max-width: 100px; max-height: 100px;">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="imagen_u" class="form-label">Imagen de Usuario</label>
+                                            <input type="file" class="form-control" id="imagen_u" name="imagen">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="aid_username" class="form-label">Usuario</label>
+                                            <input type="text" id="aid_username" class="form-control"
+                                                   placeholder="Username" name="username">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="aid_first_name" class="form-label">Nombres</label>
+                                            <input type="text" id="aid_first_name" class="form-control"
+                                                   placeholder="Nombre" name="first_name">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="aid_last_name" class="form-label">Apellidos</label>
+                                            <input type="text" id="aid_last_name" class="form-control"
+                                                   placeholder="Apellidos" name="last_name">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="aid_email" class="form-label">Correo</label>
+                                            <input type="email" id="aid_email" class="form-control" placeholder="Correo"
+                                                   name="email">
+                                        </div>
+                                         <div class="col-md-4 mb-3">
+                                            <label for="aid_telefono" class="form-label">Telefono</label>
+                                            <input type="text" id="aid_telefono" class="form-control" placeholder="Teléfono"
+                                                   name="telefono">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="aid_password" class="form-label">Contraseña</label>
+                                            <input type="password" id="aid_password" class="form-control"
+                                                   placeholder="Entrar contraseña" name="password">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="aid_group_mostrar" class="form-label">Grupo</label>
+                                            <select name="group" class="form-control" autocomplete="off" required="" {% if not user.is_superuser and perms.envios.list_customuser %} disabled {% endif %}
+                                                    id="aid_group_mostrar">
+                                                <optgroup label="Grupo">
+                                                    {% for group in form.group %}
+                                                        <option value={{ group.pk }}>{{ group }}</option>
+                                                    {% endfor %}
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-danger" type="button" data-bs-dismiss="modal">Cancelar
+                                    </button>
+                                    <button class="btn btn-success" type="submit">Confirmar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>{% endif %}
+            {% if perms.envios.delete_customuser %}
+                <div class="modal fade" id="eliminar" role="dialog"></div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block extrajs %}
+    <script src="{% static 'libs/multiselect/js/jquery.multi-select.js' %}"></script>
+    <script src="{% static 'libs/select2/js/select2.min.js' %}"></script>
+    <script src="{% static 'libs/select2/js/i18n/es.js' %}"></script>
+    <script>
+        $('#id_group').select2(
+            {
+                dropdownParent: $('#crear'),
+                minimumResultsForSearch: 2,
+                selectOnClose: true,
+                placeholder: 'Seleccione',
+                language: 'es'
+            }
+        );
+
+        $('#aid_group_mostrar').select2(
+            {
+                dropdownParent: $('#editar'),
+                minimumResultsForSearch: 2,
+                selectOnClose: true,
+                placeholder: 'Seleccione',
+                language: 'es'
+            }
+        );
+    </script>
+    
+    <script type="text/javascript">
+        {% if perms.envios.change_customuser %}
+            function abrir_edicion(userPk) {
+                let updateUrl = '/usuarios/actualizar/' + userPk + '/';
+                fetch(`/usuarios/${userPk}/datos/`)
+                    .then(response => {if (response.ok) return response.json();})
+                    .then(data => {
+                        if (data.status === 'success') {
+                            $('#aid_username').val(data.id_username).trigger('change');
+                            $('#aid_first_name').val(data.id_first_name).trigger('change');
+                            $('#aid_password').val(data.id_password).trigger('change');
+                            $('#aid_telefono').val(data.id_telefono).trigger('change');
+                            $('#aid_email').val(data.id_email).trigger('change');
+                            $('#imagen-preview_u').attr('src', data.imagen).show();
+                            $('#imagen_u').val(null);
+                            $('#aid_last_name').val(data.id_last_name).trigger('change');
+                            $('#aid_is_active').prop('checked', data.is_active);
+                            $('#aid_group_mostrar').val(data.id_group_mostrar).trigger('change');
+                            $('#form-editar_usuario').attr('action', updateUrl);
+                            $('#editar').modal('show')
+                        }
+                    }).catch(error => {});
+            }
+        {% endif %}
+        {% if perms.envios.add_customuser %}
+            function abrir_creacion() {
+                $('#crear').modal('show')
+            }
+        {% endif %}
+        {% if perms.envios.delete_customuser%}
+            function abrir_eliminacion(url) {
+                $('#eliminar').load(url, function () {
+                    $(this).modal('show')
+                })
+            }
+        {% endif %}
+        document.addEventListener('DOMContentLoaded', function () {
+            {% if perms.envios.change_customuser%}
+                let botonEditar = document.querySelectorAll('#BotonEditar');
+                if (botonEditar) {
+                    botonEditar.forEach(function (botonEditar) {
+                        botonEditar.addEventListener('mouseover', function () {
+                            this.setAttribute('title', 'Editar');
+                        });
+                        botonEditar.addEventListener('mouseout', function () {
+                            this.removeAttribute('title')
+                        });
+                    });
+                }
+            {% endif %}
+            {% if perms.envios.delete_customuser%}
+                let botonEliminar = document.querySelectorAll('#BotonEliminar');
+                if (botonEliminar) {
+                    botonEliminar.forEach(function (botonEliminar) {
+                        botonEliminar.addEventListener('mouseover', function () {
+                            this.setAttribute('title', 'Eliminar');
+                        });
+                        botonEliminar.addEventListener('mouseout', function () {
+                            this.removeAttribute('title')
+                        });
+                    });
+                }
+            {% endif %}
+        });
+    </script>
+    <script>
+        document.getElementById('imagen').addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('imagen-preview').src = e.target.result;
+                    document.getElementById('imagen-preview').style.display = 'block';
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+        document.getElementById('imagen_u').addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('imagen-preview_u').src = e.target.result;
+                    document.getElementById('imagen-preview_u').style.display = 'block';
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    </script>
+{% endblock %}

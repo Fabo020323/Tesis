@@ -13,10 +13,7 @@ def create_default_configurations(sender, **kwargs):
     #return 0
     default_configs = {
         "paginado": int(os.environ.get('PAGINATE')),
-        "rastreo": str(os.environ.get('RASTREO')),
         "version": str(os.environ.get('VERSION')),
-        "credito": str(os.environ.get('CREDITO')),
-        "balance": str(os.environ.get('BALANCE')),
     }
     for key, value in default_configs.items():
         Configuracion.objects.get_or_create(llave=key, defaults={'valor': value})

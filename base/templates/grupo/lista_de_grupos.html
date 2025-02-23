@@ -1,0 +1,238 @@
+{% extends 'template_base.html' %}
+{% load custom_tags %}
+{% load static %}
+
+{% block tittle %}
+    Listado de Grupos de Imágenes
+{% endblock %}
+
+{% block extracss %}
+    <style>
+        input[readonly] {
+            opacity: 0.6 !important;
+            pointer-events: none !important;
+            cursor: not-allowed !important;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% if perms.base.lista_de_grupo %}
+        <div class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <div class="row justify-content-between mb-2">
+                                    <div class="col-auto">
+                                        {% safe_url 'lista_de_grupo' as lista_de_grupo_url %}
+                                        {% if q %}
+                                            <form method="GET" name="search_grupo"
+                                                  action="{{ lista_de_grupo_url }}"
+                                                  class="search-bar position-relative mb-sm-0 mb-2 d-flex align-items-center">
+                                                <label>
+                                                    <input type="text"
+                                                           name="q"
+                                                           class="form-control"
+                                                           placeholder="Buscar..."
+                                                           value="{{ request.GET.q }}"/>
+                                                </label>
+                                                <a href="{{ lista_de_grupo_url }}">
+                                                    <span class="mdi mdi-close-circle"></span>
+                                                </a>
+                                            </form>
+                                        {% else %}
+                                            <form method="GET" name="search_grupo"
+                                                  action="{{ lista_de_grupo_url }}"
+                                                  class="search-bar position-relative mb-sm-0 mb-2">
+                                                <label>
+                                                    <input type="text"
+                                                           name="q"
+                                                           class="form-control"
+                                                           placeholder="Buscar..."/>
+                                                </label>
+                                                <span class="mdi mdi-magnify"></span>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                    {% if perms.envios.add_grupo %}
+                                        <div class="col-auto">
+                                            {% safe_url 'crear_grupo' as crear_grupo_url %}
+                                            <form action="" method="post">
+                                                <div class="text-md-end">
+                                                    <button type="button"
+                                                            class="btn btn-success waves-effect waves-light"
+                                                            onclick="abrir_creacion('{{ crear_grupo_url }}')">
+                                                        <i class="mdi mdi-domain-plus mdi-14px"
+                                                           style="margin-right: 5px"></i>
+                                                        <span class="d-none d-md-inline">Nuevo Grupo</span>
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div id="spinner" style="display: none;">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                    <p>Procesando imágenes, por favor espere...</p>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-centered table-hover dt-responsive nowrap w-100"
+                                           id="grupo-datatable">
+                                        <thead>
+                                        <tr class="odd">
+                                            <th>Nombre</th>
+                                            <th>Descripción</th>
+                                            {% if perms.envios.change_grupo or perms.envios.delete_grupo %}
+                                                <th class="text-center" style="width: 150px;">Acción</th>
+                                            {% endif %}
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for grupo in object_list %}
+                                            <tr>
+                                                <td>
+                                                    {{ grupo.nombre }}
+                                                    <br/>
+                                                    <p class="m-0 d-inline-block align-middle font-16">
+                                                        <b>{{ grupo.user }}</b>
+                                                        <br/>
+                                                        <small><b>{{ grupo.fecha_creacion }}</b></small>
+                                                    </p>
+                                                </td>
+                                                <td>{{ grupo.descripcion }}</td>
+                                                {% if perms.envios.change_grupo or perms.envios.delete_grupo %}
+                                                    <td class="text-center">
+                                                        {% if perms.envios.change_grupo %}
+                                                            {% safe_url 'actualizar_grupo' grupo.pk as actualizar_grupo_url %}
+                                                            <button id="BotonEditar"
+                                                                    onclick="abrir_edicion('{{ actualizar_grupo_url }}')"
+                                                                    style="border: none; width: 40px;"
+                                                                    class="btn btn-outline-blue rounded-pill waves-effect waves-light">
+                                                                <i class="mdi mdi-square-edit-outline"></i>
+                                                            </button>
+                                                        {% endif %}
+                                                        {% if perms.envios.delete_grupo %}
+                                                            {% safe_url 'eliminar_grupo' grupo.pk as eliminar_grupo_url %}
+                                                            <button id="BotonEliminar"
+                                                                    onclick="abrir_eliminacion('{{ eliminar_grupo_url }}')"
+                                                                    style="border: none; width: 40px;"
+                                                                    class="btn btn-outline-danger rounded-pill waves-effect waves-light">
+                                                                <i class="mdi mdi-delete"></i>
+                                                            </button>
+                                                        {% endif %}
+                                                    <br/>
+                                                    {% if perms.base.extract_grupo_plano %}
+                                                            {% safe_url 'grupo_plano' grupo.pk as grupo_plano_url %}
+                                                            <a href="{{ grupo_plano_url }}"
+                                                               class="btn btn-outline-info rounded-pill waves-effect waves-light"
+                                                               style="border: none;">
+                                                                <i class="mdi mdi-text-box-search"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                    {% if perms.base.view_imagenes_grupo %}
+                                                        {% safe_url 'imagenes_grupo' grupo.pk as imagenes_grupo_url %}
+                                                        <a href="{{ imagenes_grupo_url }}"
+                                                           class="btn btn-outline-success rounded-pill waves-effect waves-light"
+                                                           style="border: none;">
+                                                            <i class="mdi mdi-eye"></i> </a>
+                                                    {% endif %}
+                                                    </td>
+                                                {% endif %}
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% include 'pagination.html' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if perms.envios.change_grupo %}
+                <div class="modal fade" id="editar" role="dialog"></div>
+            {% endif %}
+            {% if perms.envios.add_grupo %}
+                <div class="modal fade" id="crear" role="dialog"></div>{% endif %}
+            {% if perms.envios.delete_grupo %}
+                <div class="modal fade" id="eliminar" role="dialog"></div>{% endif %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        {% if perms.envios.change_grupo or perms.envios.admin_grupo%}
+            function abrir_edicion(url) {
+                $('#editar').load(url, function () {
+                    $(this).modal('show')
+                })
+            }
+        {% endif %}
+        {% if perms.envios.add_grupo%}
+            function abrir_creacion(url) {
+                $('#crear').load(url, function () {
+                    $(this).modal('show')
+                })
+            }
+        {% endif %}
+        {% if perms.envios.delete_grupo %}
+            function abrir_eliminacion(url) {
+                $('#eliminar').load(url, function () {
+                    $(this).modal('show')
+                })
+            }
+        {% endif %}
+        document.addEventListener('DOMContentLoaded', function () {
+            {% if perms.envios.change_grupo or perms.envios.admin_grupo%}
+                let botonEditar = document.querySelectorAll('#BotonEditar');
+                if (botonEditar) {
+                    botonEditar.forEach(function (botonEditar) {
+                        botonEditar.addEventListener('mouseover', function () {
+                            this.setAttribute('title', 'Editar');
+                        });
+                        botonEditar.addEventListener('mouseout', function () {
+                            this.removeAttribute('title')
+                        });
+                    });
+                }
+            {% endif %}
+            {% if perms.envios.delete_grupo%}
+                let botonEliminar = document.querySelectorAll('#BotonEliminar');
+                if (botonEliminar) {
+                    botonEliminar.forEach(function (botonEliminar) {
+                        botonEliminar.addEventListener('mouseover', function () {
+                            this.setAttribute('title', 'Eliminar');
+                        });
+                        botonEliminar.addEventListener('mouseout', function () {
+                            this.removeAttribute('title')
+                        });
+                    });
+                }
+            {% endif %}
+        });
+    </script>
+    <script>
+        function selectAll(input) {
+            input.select();
+        }
+
+        function checkAndSetDefault(input) {
+            if (input.value.trim() === '') {
+                input.value = 0;
+            }
+        }
+    </script>
+{% endblock %}
+<script>
+    // Mostrar el spinner cuando la página esté cargando
+    window.onload = function () {
+        document.getElementById('spinner').style.display = 'block';
+    }
+</script>
+
+

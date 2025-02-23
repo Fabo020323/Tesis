@@ -9,6 +9,8 @@ urlpatterns = [
     path('', Home.as_view(), name='base'),
     path('login/', UserLoginView.as_view(), name='login'),
     path('logout/', UserLogoutView.as_view(), name='logout'),
+    path('imagenes/', include('base.modules.Imagen.urls')),
+    path('grupos/',include('base.modules.Grupos_Imagenes.urls')),
+    path('usuarios/',include('base.modules.usuario.urls'))
     # path('example/', include('example.modules.example.urls')),
 ]
-

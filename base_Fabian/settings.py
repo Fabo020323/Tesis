@@ -69,7 +69,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'base_Fabian.wsgi.application'
 
-
+print(os.environ.get('DB_NAME'))
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -123,3 +123,11 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'base/media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'fabiantesis23@gmail.com'  # Tu correo
+EMAIL_HOST_PASSWORD = 'ucww tunz xjes xlgt'  # Contraseña o app password
+DEFAULT_FROM_EMAIL = 'fabiantesis23@gmail.com'

@@ -15,7 +15,7 @@ class CustomUser(AbstractUser):
     sidenav_size = models.CharField(max_length=10, default='default')
     sidebar_user_info = models.BooleanField(default=False)
     sidenav_twocolumn = models.CharField(max_length=10, default='light')
-    imagen = models.ImageField(upload_to='imagen_usuario/', blank=True, null=True, default='default/spiderman.png')
+    imagen = models.ImageField(upload_to='imagen_usuario/', blank=True, null=True, default='default/spiderman.jpg')
     telefono = models.CharField(max_length=10, default='', blank=True, null=False)
 
     class Meta:
@@ -23,7 +23,7 @@ class CustomUser(AbstractUser):
         verbose_name_plural = 'Usuarios'
         ordering = ['username']
         permissions = [('list_customuser', 'Lista de Usuarios'), ('permiso_sms', 'Permisos SMS'),
-                       ('list_customuser_gerente', 'Lista de Usuarios Gerente')]
+                      ]
 
     def __str__(self):
         return self.username
@@ -40,15 +40,6 @@ class CustomUser(AbstractUser):
         else:
             return "Sin grupo"
 
-    @property
-    def get_principal_sucursal(self):
-        primary_sucursales = self.sucursales.filter(primaria=True)
-        if primary_sucursales.exists():
-            return primary_sucursales.first()
-        elif self.sucursales.exists():
-            return self.sucursales.first()
-        else:
-            return None
 
     @property
     def get_active_users(self):

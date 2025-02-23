@@ -1,0 +1,283 @@
+{% extends 'template_base.html' %}
+{% load custom_tags %}
+{% load static %}
+
+{% block tittle %}
+    Listado de Imágenes
+{% endblock %}
+
+{% block extracss %}
+    <style>
+        input[readonly] {
+            opacity: 0.6 !important;
+            pointer-events: none !important;
+            cursor: not-allowed !important;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% if perms.base.lista_de_imagen %}
+        <div class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <div class="row justify-content-between mb-2">
+                                    <div class="col-auto">
+                                        {% safe_url 'lista_de_imagen' as lista_de_imagen_url %}
+                                        {% if q %}
+                                            <form method="GET" name="search_imagen"
+                                                  action="{{ lista_de_imagen_url }}"
+                                                  class="search-bar position-relative mb-sm-0 mb-2 d-flex align-items-center">
+                                                <label>
+                                                    <input type="text"
+                                                           name="q"
+                                                           class="form-control"
+                                                           placeholder="Buscar..."
+                                                           value="{{ request.GET.q }}"/>
+                                                </label>
+                                                <a href="{{ lista_de_imagen_url }}">
+                                                    <span class="mdi mdi-close-circle"></span>
+                                                </a>
+                                            </form>
+                                        {% else %}
+                                            <form method="GET" name="search_imagen"
+                                                  action="{{ lista_de_imagen_url }}"
+                                                  class="search-bar position-relative mb-sm-0 mb-2">
+                                                <label>
+                                                    <input type="text"
+                                                           name="q"
+                                                           class="form-control"
+                                                           placeholder="Buscar..."/>
+                                                </label>
+                                                <span class="mdi mdi-magnify"></span>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                    <div id="spinner" style="display: none;" class="col-auto">
+                                        <div class="spinner-overlay">
+                                            <div class="spinner"></div>
+                                        </div>
+                                    </div>
+                                    {% if perms.base.add_imagen %}
+                                        <div class="col-auto">
+                                            {% safe_url 'crear_imagen' as crear_imagen_url %}
+                                            <form action="" method="post">
+                                                <div class="text-md-end">
+                                                    <button type="button"
+                                                            class="btn btn-success waves-effect waves-light"
+                                                            onclick="abrir_creacion('{{ crear_imagen_url }}')">
+                                                        <i class="mdi mdi-domain-plus mdi-14px"
+                                                           style="margin-right: 5px"></i>
+                                                        <span class="d-none d-md-inline">Nueva Imagen</span>
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-centered table-hover dt-responsive nowrap w-100"
+                                           id="imagen-datatable">
+                                        <thead>
+                                        <tr class="odd">
+                                            <th>Nombre</th>
+                                            <th>Descripción</th>
+                                            <th>Grupo</th>
+                                            {% if perms.base.change_imagen or perms.base.delete_imagen %}
+                                                <th class="text-center" style="width: 150px;">Acción</th>
+                                            {% endif %}
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for imagen in object_list %}
+                                            <tr>
+                                                <td>
+                                                    <img src="{{ imagen.imagen.url }}" alt="contact-img"
+                                                         title="contact-img" class="rounded me-3" height="48"
+                                                         width="48">
+                                                    <p class="m-0 d-inline-block align-middle font-16">
+                                                        <small><b>{{ imagen.nombre }}</b></small>
+                                                        <br/>
+                                                        <b>{{ imagen.user }}</b>
+                                                        <br/>
+                                                        {% if imagen.analizado %}
+                                                            <span class="badge bg-success">Analizado</span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">Pendiente</span>
+                                                        {% endif %}
+                                                    </p>
+                                                </td>
+                                                <td>
+                                                    {{ imagen.descripcion }}
+                                                </td>
+                                                <td>
+                                                    {% if imagen.grupo %}{{ imagen.grupo }}{% else %}No ha sido
+                                                        asignado{% endif %}
+                                                </td>
+                                                {% if perms.base.change_imagen or perms.base.delete_imagen %}
+                                                    <td class="text-center">
+                                                        {% if perms.base.change_imagen %}
+                                                            {% safe_url 'actualizar_imagen' imagen.pk as actualizar_imagen_url %}
+                                                            <button id="BotonEditar"
+                                                                    onclick="abrir_edicion('{{ actualizar_imagen_url }}')"
+                                                                    style="border: none; width: 40px;"
+                                                                    class="btn btn-outline-blue rounded-pill waves-effect waves-light">
+                                                                <i class="mdi mdi-square-edit-outline"></i>
+                                                            </button>
+                                                        {% endif %}
+                                                        {% if perms.base.delete_imagen %}
+                                                            {% safe_url 'eliminar_imagen' imagen.pk as eliminar_imagen_url %}
+                                                            <button id="BotonEliminar"
+                                                                    onclick="abrir_eliminacion('{{ eliminar_imagen_url }}')"
+                                                                    style="border: none; width: 40px;"
+                                                                    class="btn btn-outline-danger rounded-pill waves-effect waves-light">
+                                                                <i class="mdi mdi-delete"></i>
+                                                            </button>
+                                                        {% endif %}
+                                                        <br/>
+                                                        {% if perms.base.extract_plano and not imagen.analizado %}
+                                                            {% safe_url 'plano' imagen.pk as plano_url %}
+                                                            <a href="{{ plano_url }}"
+                                                               class="btn btn-outline-info rounded-pill waves-effect waves-light extract"
+                                                               style="border: none;">
+                                                                <i class="mdi mdi-text-box-search"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                        {% if perms.base.view_analisis_imagen and imagen.hay_texto_extraido and imagen.analizado %}
+                                                            {% safe_url 'ver_plano' imagen.pk as ver_plano_url %}
+                                                            <a onclick="abrir_ver('{{ ver_plano_url }}')"
+                                                               class="btn btn-outline-success rounded-pill waves-effect waves-light"
+                                                               style="border: none;">
+                                                                <i class="mdi mdi-eye"></i> </a>
+                                                        {% endif %}
+                                                    <br/>
+                                                    {% if perms.base.extract_formateado and not imagen.analizado %}
+                                                            {% safe_url 'formateado' imagen.pk as formateado_url %}
+                                                            <a href="{{ formateado_url }}"
+                                                               class="btn btn-outline-info rounded-pill waves-effect waves-light extract"
+                                                               style="border: none;">
+                                                                <i class="mdi mdi-text-box-search"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                    {% if perms.base.view_analisis_imagen and imagen.hay_texto_extraido and imagen.analizado %}
+                                                            {% safe_url 'ver_formato' imagen.pk as ver_formato_url %}
+                                                            <a onclick="abrir_ver('{{ ver_formato_url }}')"
+                                                               class="btn btn-outline-success rounded-pill waves-effect waves-light"
+                                                               style="border: none;">
+                                                                <i class="mdi mdi-eye"></i> </a>
+                                                        {% endif %}
+                                                    </td>
+
+                                                {% endif %}
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% include 'pagination.html' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if perms.base.view_analisis_imagen %}
+                <div class="modal fade" id="ver" role="dialog"></div>
+            {% endif %}
+            {% if perms.base.change_imagen %}
+                <div class="modal fade" id="editar" role="dialog"></div>
+            {% endif %}
+            {% if perms.base.add_imagen %}
+                <div class="modal fade" id="crear" role="dialog"></div>{% endif %}
+            {% if perms.base.delete_imagen %}
+                <div class="modal fade" id="eliminar" role="dialog"></div>{% endif %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        {% if perms.base.change_imagen %}
+            function abrir_edicion(url) {
+                $('#editar').load(url, function () {
+                    $(this).modal('show')
+                })
+            }
+        {% endif %}
+        {% if perms.base.add_imagen%}
+            function abrir_creacion(url) {
+                $('#crear').load(url, function () {
+                    $(this).modal('show')
+                })
+            }
+        {% endif %}
+        {% if perms.base.delete_imagen %}
+            function abrir_eliminacion(url) {
+                $('#eliminar').load(url, function () {
+                    $(this).modal('show')
+                })
+            }
+        {% endif %}
+        {% if perms.base.view_analisis_imagen %}
+            function abrir_ver(url) {
+                $('#ver').load(url, function () {
+                    $(this).modal('show')
+                })
+            }
+        {% endif %}
+        document.addEventListener('DOMContentLoaded', function () {
+            {% if perms.base.change_imagen or perms.base.admin_imagen%}
+                let botonEditar = document.querySelectorAll('#BotonEditar');
+                if (botonEditar) {
+                    botonEditar.forEach(function (botonEditar) {
+                        botonEditar.addEventListener('mouseover', function () {
+                            this.setAttribute('title', 'Editar');
+                        });
+                        botonEditar.addEventListener('mouseout', function () {
+                            this.removeAttribute('title')
+                        });
+                    });
+                }
+            {% endif %}
+            {% if perms.base.delete_imagen%}
+                let botonEliminar = document.querySelectorAll('#BotonEliminar');
+                if (botonEliminar) {
+                    botonEliminar.forEach(function (botonEliminar) {
+                        botonEliminar.addEventListener('mouseover', function () {
+                            this.setAttribute('title', 'Eliminar');
+                        });
+                        botonEliminar.addEventListener('mouseout', function () {
+                            this.removeAttribute('title')
+                        });
+                    });
+                }
+            {% endif %}
+        });
+    </script>
+    <script>
+        function selectAll(input) {
+            input.select();
+        }
+
+        function checkAndSetDefault(input) {
+            if (input.value.trim() === '') {
+                input.value = 0;
+            }
+        }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const link_extract = document.querySelectorAll('.extract');
+            link_extract.forEach(link => {
+                link.addEventListener('click', function (event) {
+                    const spinner = document.getElementById('spinner');
+                    spinner.style.display = 'block';
+                })
+            })
+        })
+    </script>
+{% endblock %}
+
+

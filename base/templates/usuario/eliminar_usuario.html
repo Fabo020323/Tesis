@@ -1,0 +1,22 @@
+{% load custom_tags %}
+{% if perms.envios.delete_customuser %}
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h2 class="card-title mb-0 text-white">Eliminar Usuario</h2>
+                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            {% safe_url 'eliminar_usuario'  object.pk as eliminar_usuario_url%}
+            <form action="{{ eliminar_usuario_url }}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <h4>¿Desea eliminar el usuario {{ object.username }}?</h4>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-danger" type="submit">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endif %}

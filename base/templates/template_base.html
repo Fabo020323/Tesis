@@ -1,0 +1,498 @@
+{% load static %}
+{#{% load custom_filters %}#}
+{% load custom_tags %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <title>Extractor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="tesis" name="author"/>
+    <meta content="version" name="v01"/>
+    <link rel="shortcut icon" href="/media/default/OCR.png" type="image/png">
+    <link href="{% static 'libs/flatpickr/flatpickr.min.css' %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static 'libs/selectize/css/selectize.bootstrap3.css' %}" rel="stylesheet" type="text/css"/>
+    <script src="{% static 'js/head.js' %}"></script>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" id="app-style"/>
+    <link href="{% static 'css/app.min.css' %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static 'css/icons.min.css' %}" rel="stylesheet" type="text/css"/>
+    <style>
+        @keyframes blink-color {
+            0% {
+                background-color: #f1556c1a;
+                color: #f1556c;
+            }
+            50% {
+                background-color: #f1556c;
+                color: white
+            }
+            100% {
+                background-color: #f1556c1a;
+                color: #f1556c;
+            }
+        }
+
+        .btn-soft-danger {
+            animation-name: blink-color;
+            animation-duration: 1s;
+            animation-iteration-count: 3;
+        }
+    </style>
+    {% block extracss %} {% endblock %}
+</head>
+<body>
+<div id="wrapper">
+    <div class="app-menu">
+        <div class="logo-box">
+            {% safe_url 'base' as base_url %}
+            <a href="{{ base_url }}" class="logo-light">
+                <img src="/media/default/OCR.png" alt="logo"
+                     class="logo-lg"
+                     style="
+                             height: 50px;
+                             width: 50px
+                             ">
+                <img src="/media/default/OCR.png" alt="small logo"
+                     class="logo-sm"
+                     style="
+                             height: 50px;
+                             width: 50px
+                             ">
+            </a>
+            <a href="{{ base_url }}" class="logo-dark">
+                <img src="/media/default/OCR.png" alt="dark logo"
+                     class="logo-lg"
+                     style="
+                             height: 50px;
+                             width: 50px
+                             ">
+                <img src="/media/default/OCR.png" alt="small logo"
+                     class="logo-sm"
+                     style="
+                             height: 50px;
+                             width: 50px
+                             ">
+            </a>
+        </div>
+
+        <div class="scrollbar">
+            <div class="user-box text-center">
+                <img src="{{ user.imagen.url }}" alt="user-img" title="Mat Helme"
+                     class="rounded-circle avatar-md">
+                <div>
+                    <span class="h4 mb-1 d-block">{{ user.get_full_names }}</span>
+                    <span class="h6 mb-1 d-block">{{ user.email }}</span>
+                </div>
+                <p class="text-muted mb-0">{{ user.get_rules }}</p>
+            </div>
+
+            <ul class="menu">
+                <li class="menu-title">Analizador de Tendencias</li>
+                <li class="menu-item">
+                    {% safe_url 'base' as base_url %}
+                    <a href="{{ base_url }}" class="menu-link">
+                        <span class="menu-icon"><i class="mdi mdi-desktop-mac-dashboard"></i></span>
+                        <span class="menu-text"> Inicio </span>
+                    </a>
+                </li>
+                {% if perms.base.lista_de_imagen %}
+                    <li class="menu-title">Gestión</li>
+                {% endif %}
+                {% if perms.base.lista_de_imagen %}
+                    <li class="menu-item">
+                        <a href="#menuGestion" data-bs-toggle="collapse" class="menu-link">
+                            <span class="menu-icon"><i class="mdi mdi-text-box-multiple-outline"></i></span>
+                            <span class="menu-text"> Gestión </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse collapse-md" id="menuGestion">
+                            <ul class="sub-menu" style="width: 100%; padding-left: 15px">
+                                {% if perms.base.lista_de_imagen %}
+                                    {% safe_url 'lista_de_imagen' as lista_de_imagen_url %}
+                                    <li class="menu-item">
+                                        <a href="{{ lista_de_imagen_url }}" class="menu-link">
+                                            <span class="menu-icon"><i class="mdi mdi-text-box-plus-outline"></i></span>
+                                            <span class="menu-text">Listado de Imágenes</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% if perms.base.lista_de_grupo %}
+                                    {% safe_url 'lista_de_grupo' as lista_de_grupo_url %}
+                                    <li class="menu-item">
+                                        <a href="{{ lista_de_grupo_url }}" class="menu-link">
+                                            <span class="menu-icon"><i class="mdi mdi-text-box-plus-outline"></i></span>
+                                            <span class="menu-text">Listado de Grupos</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% if perms.base.list_customuser %}
+                                    {% safe_url 'usuarios_listado' as usuarios_listado_url %}
+                                    <li class="menu-item">
+                                        <a href="{{ usuarios_listado_url }}" class="menu-link">
+                                            <span class="menu-icon"><i class="mdi mdi-text-box-plus-outline"></i></span>
+                                            <span class="menu-text">Listado de Usuarios</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </li>
+                {% endif %}
+
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+    </div>
+    <div class="content-page">
+        <div class="navbar-custom">
+            <div class="topbar">
+                <div class="topbar-menu d-flex align-items-center gap-1">
+                    <div class="logo-box">
+                        {% safe_url 'base' as base_url %}
+                        <a href="{{ base_url }}" class="logo-light">
+                            <img src="{% static 'images/logo-light.png' %}" alt="logo" class="logo-lg">
+                            <img src="{% static 'images/logo-sm.png' %}" alt="small logo" class="logo-sm">
+                        </a>
+                        <a href="{{ base_url }}" class="logo-dark">
+                            <img src="{% static 'images/logo-dark.png' %}" alt="dark logo" class="logo-lg">
+                            <img src="{% static 'images/logo-sm.png' %}" alt="small logo" class="logo-sm">
+                        </a>
+                    </div>
+                    <button class="button-toggle-menu">
+                        <i class="mdi mdi-menu"></i>
+                    </button>
+                </div>
+                <ul class="topbar-menu d-flex align-items-center">
+                    {% if mantenimiento %}
+                        <li class="d-none d-sm-inline-block">
+                            <div class="nav-link waves-effect waves-light" id="light-dark-mode">
+                                    <span class="badge font-24" style="background-color: #e0004e !important;">
+                                        Mantenimiento
+                                    </span>
+                            </div>
+                        </li>
+                    {% endif %}
+                    <li class="d-none d-md-inline-block">
+                        <a class="nav-link waves-effect waves-light" href="" data-toggle="fullscreen">
+                            <i class="fe-maximize font-22"></i>
+                        </a>
+                    </li>
+                    <li class="dropdown d-lg-none">
+                        <a class="nav-link dropdown-toggle waves-effect waves-light arrow-none"
+                           data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false"
+                           aria-expanded="false">
+                            <i class="ri-search-line font-22"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-animated dropdown-lg p-0">
+                            <form class="p-3">
+                                <input type="search" class="form-control" placeholder="Search ..."
+                                       aria-label="Recipient's username" name="search">
+                            </form>
+                        </div>
+                    </li>
+
+                    <li class="d-none d-sm-inline-block">
+                        <div class="nav-link waves-effect waves-light" id="light-dark-mode">
+                            <i class="mdi mdi-theme-light-dark font-24"></i>
+                        </div>
+                    </li>
+
+                    <li class="dropdown">
+                        <a class="nav-link dropdown-toggle nav-user me-0 waves-effect waves-light"
+                           data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false"
+                           aria-expanded="false">
+                            <img src="{{ user.imagen.url }}" alt="user-image" class="rounded-circle">
+                            <span class="ms-1 d-none d-md-inline-block">
+                                            {{ user.get_full_names }}
+                                    <i class="mdi mdi-chevron-down"></i>
+                                </span>
+                        </a>
+                    </li>
+                    {% safe_url 'logout' as logout_url %}
+                    <form id="logout-form" action="{{ logout_url }}" method="post"
+                          style="display: none;"> {% csrf_token %}</form>
+                    <a href="javascript:void(0);" class="dropdown-item notify-item"
+                       onclick="document.getElementById('logout-form').submit();">
+                        <i class="mdi mdi-logout"></i>
+                        <span>Cerrar Sección</span>
+                    </a>
+                    <li>
+                        <a class="nav-link waves-effect waves-light" data-bs-toggle="offcanvas"
+                           href="#theme-settings-offcanvas">
+                            <i class="fe-settings font-22"></i>
+                        </a>
+                </ul>
+            </div>
+        </div>
+        <div class="content">
+            <div class="container-fluid">
+                <div class="row" style="margin-right: 50px; margin-left: 50px;">
+                    <div class="col-12">
+                        <div class="page-title-box">
+                            <div class="page-title-right">
+                                <ol class="breadcrumb m-0">
+                                    {% for item in breadcrumb %}
+                                        {% if forloop.last %}
+                                            <li class="breadcrumb-item active">{{ item.text }}</li>
+                                        {% else %}
+                                            <li class="breadcrumb-item">
+                                                <a href="{{ item.url }}">{{ item.text }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ol>
+                            </div>
+                            <h4 class="page-title">
+                                {% block tittle %}{% endblock %}
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+
+                {% if messages %}
+                    <div class="row" style="margin-right: 50px; margin-left: 50px;">
+                        <div class="card-body">
+                            {% for message in messages %}
+                                {% if message.tags == 'success' or message.tags == 'warning'  or message.tags == 'info' %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible bg-{{ message.tags }} text-white border-0 fade show"
+                                         role="alert">
+                                        <button type="button" class="btn-close btn-close-white"
+                                                data-bs-dismiss="alert" aria-label="Close"></button>
+                                        {{ message }}
+                                    </div>
+                                {% elif message.tags == 'error' %}
+                                    <div class="alert alert-danger alert-dismissible bg-danger text-white border-0 fade show"
+                                         role="alert">
+                                        <button type="button" class="btn-close btn-close-white"
+                                                data-bs-dismiss="alert" aria-label="Close"></button>
+                                        {{ message }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+                {% block content %} {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Visual de la pagina#}
+<div class="offcanvas offcanvas-end right-bar" tabindex="-1" id="theme-settings-offcanvas">
+    <div class="offcanvas-body p-3 h-100" data-simplebar>
+        <div class="tab-content pt-0">
+            <div class="tab-pane active" id="settings-tab" role="tabpanel">
+                <div class="mt-n3">
+                    <h class="fw-medium py-2 px-3 font-13 text-uppercase bg-light mx-n3 mt-n3 mb-3">
+                        <span class="d-block py-1">Configuración del Tema</span>
+                    </h>
+                </div>
+                <h5 class="fw-medium font-14 mt-4 mb-2 pb-1">Esquema de Colores</h5>
+                <div class="colorscheme-cardradio">
+                    <div class="d-flex flex-column gap-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-bs-theme"
+                                   id="layout-color-light"
+                                   value="light">
+                            <label class="form-check-label" for="layout-color-light">Claro</label>
+                        </div>
+
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-bs-theme"
+                                   id="layout-color-dark"
+                                   value="dark">
+                            <label class="form-check-label" for="layout-color-dark">Oscuro</label>
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="fw-medium font-14 mt-4 mb-2 pb-1">Ancho del Contenido</h5>
+                <div class="d-flex flex-column gap-2">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="data-layout-width"
+                               id="layout-width-default" value="default">
+                        <label class="form-check-label" for="layout-width-default">Fluido (Por Defecto)</label>
+                    </div>
+
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="data-layout-width"
+                               id="layout-width-boxed"
+                               value="boxed">
+                        <label class="form-check-label" for="layout-width-boxed">Encajonado</label>
+                    </div>
+                </div>
+
+                <div id="layout-mode">
+                    <h5 class="fw-medium font-14 mt-4 mb-2 pb-1">Modo de Diseño</h5>
+
+                    <div class="d-flex flex-column gap-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-layout-mode"
+                                   id="layout-mode-default" value="default">
+                            <label class="form-check-label" for="layout-mode-default">Por Defecto</label>
+                        </div>
+
+                        <div id="layout-detached">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="data-layout-mode"
+                                       id="layout-mode-detached" value="detached">
+                                <label class="form-check-label" for="layout-mode-detached">Desprendido</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="fw-medium font-14 mt-4 mb-2 pb-1">Color de la Barra Superior</h5>
+
+                <div class="d-flex flex-column gap-2">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="data-topbar-color"
+                               id="topbar-color-light"
+                               value="light">
+                        <label class="form-check-label" for="topbar-color-light">Claro</label>
+                    </div>
+
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="data-topbar-color"
+                               id="topbar-color-dark"
+                               value="dark">
+                        <label class="form-check-label" for="topbar-color-dark">Oscuro</label>
+                    </div>
+
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="data-topbar-color"
+                               id="topbar-color-brand"
+                               value="brand">
+                        <label class="form-check-label" for="topbar-color-brand">Marca</label>
+                    </div>
+                </div>
+
+                <div>
+                    <h5 class="fw-medium font-14 mt-4 mb-2 pb-1">Color del Menú</h5>
+
+                    <div class="d-flex flex-column gap-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-menu-color"
+                                   id="leftbar-color-light" value="light">
+                            <label class="form-check-label" for="leftbar-color-light">Claro</label>
+                        </div>
+
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-menu-color"
+                                   id="leftbar-color-dark" value="dark">
+                            <label class="form-check-label" for="leftbar-color-dark">Oscuro</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-menu-color"
+                                   id="leftbar-color-brand" value="brand">
+                            <label class="form-check-label" for="leftbar-color-brand">Marca</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-menu-color"
+                                   id="leftbar-color-gradient" value="gradient">
+                            <label class="form-check-label" for="leftbar-color-gradient">Degradado</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="menu-icon-color">
+                    <h5 class="fw-medium font-14 mt-4 mb-2 pb-1">Color de Iconos del Menú</h5>
+
+                    <div class="d-flex flex-column gap-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-two-column-color"
+                                   id="twocolumn-menu-color-light" value="light">
+                            <label class="form-check-label" for="twocolumn-menu-color-light">Claro</label>
+                        </div>
+
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-two-column-color"
+                                   id="twocolumn-menu-color-dark" value="dark">
+                            <label class="form-check-label" for="twocolumn-menu-color-dark">Oscuro</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-two-column-color"
+                                   id="twocolumn-menu-color-brand" value="brand">
+                            <label class="form-check-label" for="twocolumn-menu-color-brand">Marca</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-two-column-color"
+                                   id="twocolumn-menu-color-gradient" value="gradient">
+                            <label class="form-check-label" for="twocolumn-menu-color-gradient">Degradado</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sidebar-size">
+                    <h5 class="fw-medium font-14 mt-4 mb-2 pb-1">Tamaño de la Barra Lateral</h5>
+
+                    <div class="d-flex flex-column gap-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-sidenav-size"
+                                   id="leftbar-size-default" value="default">
+                            <label class="form-check-label" for="leftbar-size-default">Por Defecto</label>
+                        </div>
+
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-sidenav-size"
+                                   id="leftbar-size-compact" value="compact">
+                            <label class="form-check-label" for="leftbar-size-compact">Compacto (Ancho
+                                Medio)</label>
+                        </div>
+
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-sidenav-size"
+                                   id="leftbar-size-small" value="condensed">
+                            <label class="form-check-label" for="leftbar-size-small">Condensado (Vista de
+                                Iconos)</label>
+                        </div>
+
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-sidenav-size"
+                                   id="leftbar-size-full" value="full">
+                            <label class="form-check-label" for="leftbar-size-full">Diseño Completo</label>
+                        </div>
+
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="data-sidenav-size"
+                                   id="leftbar-size-fullscreen" value="fullscreen">
+                            <label class="form-check-label" for="leftbar-size-fullscreen">Diseño Pantalla
+                                Completa</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sidebar-user">
+                    <h5 class="fw-medium font-14 mt-4 mb-2 pb-1">Información del Usuario en la Barra Lateral</h5>
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" name="data-sidebar-user"
+                               id="sidebaruser-check">
+                        <label class="form-check-label" for="sidebaruser-check">Habilitar</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="{% static 'js/vendor.min.js' %}"></script>
+<script src="{% static 'js/app.min.js' %}"></script>
+<script>
+    const botonNO = document.getElementById('NuevaOrden');
+    if (botonNO) {
+        botonNO.addEventListener('mouseover', function () {
+            this.setAttribute('title', 'Nueva Orden')
+        })
+        botonNO.addEventListener('mouseout', function () {
+            this.removeAttribute('title')
+        })
+    }
+</script>
+<script src="{% static 'libs/sweetalert2/sweetalert2.all.min.js' %}"></script>
+
+{% block extrajs %} {% endblock %}
+</body>
+</html>

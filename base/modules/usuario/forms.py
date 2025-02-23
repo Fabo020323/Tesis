@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib.auth.models import Group
 
-from base.modules.sucursal.models import Sucursal
 from base.modules.usuario.models import CustomUser
 
 
@@ -13,14 +12,9 @@ class UserForm(forms.ModelForm):
     is_active = forms.BooleanField(initial=True, required=False, widget=forms.CheckboxInput(
         attrs={'class': 'form-check-input ', 'data-switchery': "true", 'data-plugin': "switchery",
                'data-color': "#039cfd"}))
-    sucursales = forms.ModelMultipleChoiceField(queryset=Sucursal.objects.all(),
-                                                widget=forms.SelectMultiple(
-                                                    attrs={'class': 'form-control', 'id': 'id_sucursales',
-                                                           'autocomplete': 'off'}), required=False)
-
     class Meta:
         model = CustomUser
-        fields = ['username', 'imagen', 'email', 'first_name', 'last_name', 'is_active', 'sucursales', 'telefono']
+        fields = ['username', 'imagen', 'email', 'first_name', 'last_name', 'is_active', 'telefono']
         widgets = {
             'username': forms.TextInput(
                 attrs={'class': 'form-control', 'autocomplete': 'off', 'placeholder': 'Usuario..'}),
@@ -45,8 +39,6 @@ class UserForm(forms.ModelForm):
             if self.cleaned_data['group']:
                 user.groups.clear()
                 user.groups.add(self.cleaned_data['group'])
-            if self.cleaned_data['sucursales']:
-                user.sucursales.set(self.cleaned_data['sucursales'])
         return user
 
 

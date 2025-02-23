@@ -1,0 +1,60 @@
+{% load custom_tags %}
+{% if perms.base.add_imagen %}
+    {% safe_url 'crear_imagen' as crear_imagen_url %}
+    <form action="{{ crear_imagen_url }}" method="post" enctype="multipart/form-data">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h2 class="card-title mb-0 text-white">Nueva Imagen</h2>
+                    <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="id_nombre" class="form-label">Nombre</label>
+                            {{ form.nombre }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="imagen_imagen" class="form-label">Imagen </label>
+                            <input type="file" class="form-control" id="imagen_imagen" name="imagen">
+                        </div>
+                        <div class="col-md-4 mb-3 d-flex justify-content-center align-items-center">
+                            <img src="/media/default/OCR.png" id="imagen-preview" class="preview-image"
+                                 alt="Imagen actual" style="max-width: 100px; max-height: 100px;">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="id_descripcion" class="form-label">Descripción</label>
+                            {{ form.descripcion }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for='id_grupo' class="form-label">Grupo</label>
+                            {{ form.grupo }}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" type="button" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-success" type="submit">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endif %}
+{% block extrajs %}
+    <script>
+        document.getElementById('imagen_imagen').addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('imagen-preview').src = e.target.result;
+                    document.getElementById('imagen-preview').style.display = 'block';
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    </script>
+{% endblock %}
+

@@ -1,10 +1,67 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Login</title>
+    <meta charset="utf-8"/>
+    <title>Spider OCR</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content='Sipider OCR' name="author"/>
+    <meta content="version" name="{{ version }}"/>
+    <link rel="shortcut icon" href="  {% static '/images/OCR.png' %} ">
+    <script src=" {% static '/js/head.js' %}"></script>
+    <link href="{% static '/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" id="app-style"/>
+    <link href="{% static '/css/app.min.css' %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static '/css/icons.min.css' %}" rel="stylesheet" type="text/css"/>
 </head>
-<body>
+<body class="authentication-bg authentication-bg-pattern">
+<div class="auth-fluid">
+    <!--Auth fluid left content -->
+    <div class="auth-fluid-form-box">
+        <div class="align-items-center d-flex h-100">
+            <div class="p-3">
+                <!-- title-->
+                <h4 class="mt-0">Iniciar Sesión</h4>
+                <p class="text-muted mb-4">Introduzca usuario y contraseña para acceder a su cuente.</p>
 
+                <!-- form -->
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">Usuario</label>
+                        <input class="form-control" type="text" name="username" id="id_username" required
+                               placeholder="Entrar usuario">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_password" class="form-label">Contraseña</label>
+                        <div class="input-group input-group-merge">
+                            <input type="password" id="id_password" class="form-control" placeholder="Entrar contraseña"
+                                   name="password" required>
+                            <div class="input-group-text" data-password="false">
+                                <span class="password-eye"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center d-grid">
+                        <button class="btn btn-primary" type="submit"> Entrar</button>
+                    </div>
+                </form>
+            </div> <!-- end .card-body -->
+        </div> <!-- end .align-items-center.d-flex.h-100-->
+    </div>
+    <!-- end auth-fluid-form-box-->
+
+    <!-- Auth fluid right content -->
+    <div class="auth-fluid-right text-center">
+        <div class="auth-user-testimonial">
+            <h2 class="mb-3 text-white">Spider OCR!</h2>
+            <p class="lead"><i class="mdi mdi-format-quote-open"></i> Introduzca sus imágenes para obtener el texto en ellas
+                existente a través de técnicas de OCR  <i class="mdi mdi-format-quote-close"></i>
+            </p>
+            
+        </div> 
+    </div>
+</div>
+<script src="{% static '/js/vendor.min.js' %}"></script>
+<script src="{% static '/js/pages/authentication.init.js' %}"></script>
 </body>
 </html>

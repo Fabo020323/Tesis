@@ -7,7 +7,7 @@ class CustomUserAdmin(UserAdmin):
     model = CustomUser
     fieldsets = UserAdmin.fieldsets + (
         (None, {'fields': ('theme_color_scheme', 'layout_mode', 'layout_width', 'topbar_color', 'menu_color',
-                           'menu_icon', 'imagen', 'sidenav_size', 'sidebar_user_info', 'sidenav_twocolumn', 'sucursales','telefono')}),
+                           'menu_icon', 'imagen', 'sidenav_size', 'sidebar_user_info', 'sidenav_twocolumn','telefono')}),
     )
 
 

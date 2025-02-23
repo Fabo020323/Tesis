@@ -8,9 +8,4 @@ urlpatterns = [
     path('eliminar/<int:pk>/', UsuarioDeleteView.as_view(), name='eliminar_usuario'),
     path('configuracion_usuario/', UsuarioConfiguracionView.as_view(), name='configuracion_usuario'),
     path('<int:pk>/datos/', UsuarioListdatosView.as_view(), name='usuario_datos'),
-
-    #path('grupos/', GroupListView.as_view(), name='grupos_listado'),
-    #path('grupos/create/', GroupCreateView.as_view(), name='crear_grupo'),
-    #path('grupos/edit/<int:pk>/', GroupUpdateView.as_view(), name='actualizar_grupo'),
-    #path('grupos/delete/<int:pk>/', GroupDeleteView.as_view(), name='eliminar_grupo'),
 ]
