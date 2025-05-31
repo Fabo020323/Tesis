@@ -7,13 +7,13 @@
 {% endblock %}
 
 {% block extracss %}
-    <link href="{% static 'libs/multiselect/css/multi-select.css' %}" rel="stylesheet" type="text/css" />
-    <link href="{% static 'libs/selectize/css/selectize.bootstrap3.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'libs/multiselect/css/multi-select.css' %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static 'libs/selectize/css/selectize.bootstrap3.css' %}" rel="stylesheet" type="text/css"/>
     <link href="{% static 'libs/select2/css/select2.min.css' %}" rel="stylesheet" type="text/css"/>
 {% endblock %}
 
 {% block content %}
-    {% if perms.envios.list_customuser  %}
+    {% if perms.envios.list_customuser %}
         <div class="content">
             <div class="container-fluid">
                 <div class="row">
@@ -22,16 +22,29 @@
                             <div class="card-body">
                                 <div class="row justify-content-between mb-2">
                                     <div class="col-auto">
-                                        {% if q %}
+                                        {% if q or r %}
                                             <form method="GET" name="search_usuario"
                                                     {% safe_url 'usuarios_listado' as usuarios_listado_url %}
                                                   action="{{ usuarios_listado_url }}"
                                                   class="search-bar position-relative mb-sm-0 mb-2 d-flex align-items-center">
-                                                <input type="text"
-                                                       name="q"
-                                                       class="form-control"
-                                                       placeholder="Buscar..."
-                                                       value="{{ request.GET.q }}"/>
+                                                <div class="input-group">
+                                                    <input type="text"
+                                                           name="q"
+                                                           class="form-control"
+                                                           placeholder="Buscar..."
+                                                           value="{{ request.GET.q }}"
+                                                           id="search-input"/>
+                                                    <input type="text" id="range-datepicker"
+                                                           class="form-control"
+                                                           name="r"
+                                                           placeholder="Selecciona rango"
+                                                           value="{{ request.GET.r }}"/>
+                                                    <button class="btn btn-outline-secondary"
+                                                            style="border: 1px solid var(--ct-border-color);border-top-right-radius: 30px; border-bottom-right-radius: 30px;"
+                                                            type="submit">
+                                                        <i class="mdi mdi-magnify"></i>
+                                                    </button>
+                                                </div>
                                                 <a href="{{ usuarios_listado_url }}">
                                                     <span class="mdi mdi-close-circle"></span>
                                                 </a>
@@ -40,10 +53,22 @@
                                             <form method="GET" name="search_usuario"
                                                   action="{{ usuarios_listado_url }}"
                                                   class="search-bar position-relative mb-sm-0 mb-2">
-                                                <input type="text"
-                                                       name="q"
-                                                       class="form-control"
-                                                       placeholder="Buscar..."/>
+                                                <div class="input-group">
+                                                    <input type="text"
+                                                           name="q"
+                                                           class="form-control"
+                                                           placeholder="Buscar..."
+                                                           id="search-input"/>
+                                                    <input type="text" id="range-datepicker"
+                                                           class="form-control"
+                                                           name="r"
+                                                           placeholder="Selecciona rango"/>
+                                                    <button class="btn btn-outline-secondary"
+                                                            style="border: 1px solid var(--ct-border-color);border-top-right-radius: 30px; border-bottom-right-radius: 30px;"
+                                                            type="submit">
+                                                        <i class="mdi mdi-magnify"></i>
+                                                    </button>
+                                                </div>
                                                 <span class="mdi mdi-magnify"></span>
                                             </form>
                                         {% endif %}
@@ -71,7 +96,8 @@
                                             <th>Usuario</th>
                                             <th>Nombres y Apellidos</th>
                                             <th>Teléfono</th>
-                                            <th>Grupos</th>
+                                            <th>Rol</th>
+                                            <th>Fecha Añadido</th>
                                             {% if perms.envios.change_customuser or perms.envios.delete_customuser %}
                                                 <th class="text-center" style="width: 200px;">Acción</th>
                                             {% endif %}
@@ -82,23 +108,25 @@
                                             <tr>
                                                 <td>
                                                     <img src="{{ usuario.imagen.url }}" alt="contact-img"
-                                                             title="contact-img" class="rounded me-3" height="48"
-                                                             width="48">
+                                                         title="contact-img" class="rounded me-3" height="48"
+                                                         width="48">
                                                     <p class="m-0 d-inline-block align-middle font-16">
-                                                    {{ usuario.username }}<br/>
+                                                        {{ usuario.username }}<br/>
                                                     </p>
                                                 </td>
                                                 <td>{{ usuario.get_full_names }}</td>
                                                 <td>{{ usuario.telefono }}</td>
                                                 <td>
-                                                    {{usuario.get_rules}}
+                                                    {{ usuario.get_rules }}
                                                 </td>
+                                                <td>{{ usuario.date_joined }}</td>
                                                 {% if perms.envios.change_customuser or perms.envios.delete_customuser %}
                                                     <td class="text-center">
                                                         {% if perms.envios.change_customuser %}
                                                             <button onclick="abrir_edicion({{ usuario.pk }})"
                                                                     style="border: none;"
-                                                                    class="btn btn-outline-blue rounded-pill waves-effect waves-light BotonEditar"
+                                                                    class="btn btn-outline-blue rounded-pill waves-effect waves-light "
+                                                                    id="BotonEditar"
                                                                     data-value="{{ usuario.pk }}">
                                                                 <i class="mdi mdi-square-edit-outline"></i>
                                                             </button>
@@ -140,7 +168,8 @@
                                     {% csrf_token %}
                                     <div class="row">
                                         <div class="col-md-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <img src="/media/default/spiderman.jpg" id="imagen-preview" class="preview-image"
+                                            <img src="/media/default/spiderman.jpg" id="imagen-preview"
+                                                 class="preview-image"
                                                  alt="Imagen actual" style="max-width: 100px; max-height: 100px;">
                                         </div>
                                         <div class="col-md-4 mb-3">
@@ -201,7 +230,7 @@
                     </form>
                 </div>
             {% endif %}
-            {% if perms.envios.change_customuser  %}
+            {% if perms.envios.change_customuser %}
                 <div class="modal fade" id="editar" role="dialog">
                     <form action="#" method="post" id="form-editar_usuario"
                           enctype="multipart/form-data">
@@ -216,7 +245,8 @@
                                     {% csrf_token %}
                                     <div class="row">
                                         <div class="col-md-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <img src="/media/default/spiderman.jpg" id="imagen-preview_u" class="preview-image_u"
+                                            <img src="/media/default/spiderman.jpg" id="imagen-preview_u"
+                                                 class="preview-image_u"
                                                  alt="Imagen actual" style="max-width: 100px; max-height: 100px;">
                                         </div>
                                         <div class="col-md-4 mb-3">
@@ -247,9 +277,10 @@
                                             <input type="email" id="aid_email" class="form-control" placeholder="Correo"
                                                    name="email">
                                         </div>
-                                         <div class="col-md-4 mb-3">
+                                        <div class="col-md-4 mb-3">
                                             <label for="aid_telefono" class="form-label">Telefono</label>
-                                            <input type="text" id="aid_telefono" class="form-control" placeholder="Teléfono"
+                                            <input type="text" id="aid_telefono" class="form-control"
+                                                   placeholder="Teléfono"
                                                    name="telefono">
                                         </div>
                                         <div class="col-md-4 mb-3">
@@ -261,7 +292,9 @@
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <label for="aid_group_mostrar" class="form-label">Grupo</label>
-                                            <select name="group" class="form-control" autocomplete="off" required="" {% if not user.is_superuser and perms.envios.list_customuser %} disabled {% endif %}
+                                            <select name="group" class="form-control" autocomplete="off" required=""
+                                                    {% if not user.is_superuser and perms.envios.list_customuser %}
+                                                    disabled {% endif %}
                                                     id="aid_group_mostrar">
                                                 <optgroup label="Grupo">
                                                     {% for group in form.group %}
@@ -289,6 +322,8 @@
 {% endblock %}
 
 {% block extrajs %}
+    <script src="{% static 'libs/flatpickr/flatpickr.min.js' %}"></script>
+    <script src="{% static 'libs/flatpickr/l10n/es.js' %}"></script>a
     <script src="{% static 'libs/multiselect/js/jquery.multi-select.js' %}"></script>
     <script src="{% static 'libs/select2/js/select2.min.js' %}"></script>
     <script src="{% static 'libs/select2/js/i18n/es.js' %}"></script>
@@ -313,13 +348,15 @@
             }
         );
     </script>
-    
+
     <script type="text/javascript">
         {% if perms.envios.change_customuser %}
             function abrir_edicion(userPk) {
                 let updateUrl = '/usuarios/actualizar/' + userPk + '/';
                 fetch(`/usuarios/${userPk}/datos/`)
-                    .then(response => {if (response.ok) return response.json();})
+                    .then(response => {
+                        if (response.ok) return response.json();
+                    })
                     .then(data => {
                         if (data.status === 'success') {
                             $('#aid_username').val(data.id_username).trigger('change');
@@ -335,7 +372,8 @@
                             $('#form-editar_usuario').attr('action', updateUrl);
                             $('#editar').modal('show')
                         }
-                    }).catch(error => {});
+                    }).catch(error => {
+                });
             }
         {% endif %}
         {% if perms.envios.add_customuser %}
@@ -400,5 +438,17 @@
                 reader.readAsDataURL(this.files[0]);
             }
         });
+    </script>
+    <script type="text/javascript">
+        $('#range-datepicker').flatpickr({
+            locale: 'es',
+            dateFormat: "d-m-Y",
+            mode: "range",
+            onChange: function (selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    instance.close();
+                }
+            }
+        })
     </script>
 {% endblock %}

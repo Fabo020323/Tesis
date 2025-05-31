@@ -7,13 +7,10 @@
 {% endblock %}
 
 {% block extracss %}
-    <style>
-        input[readonly] {
-            opacity: 0.6 !important;
-            pointer-events: none !important;
-            cursor: not-allowed !important;
-        }
-    </style>
+    <link href="{% static 'libs/select2/css/select2.min.css' %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static 'libs/multiselect/css/multi-select.css' %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static 'libs/selectize/css/selectize.bootstrap3.css' %}" rel="stylesheet" type="text/css"/>
+      
 {% endblock %}
 
 {% block content %}
@@ -27,17 +24,28 @@
                                 <div class="row justify-content-between mb-2">
                                     <div class="col-auto">
                                         {% safe_url 'lista_de_grupo' as lista_de_grupo_url %}
-                                        {% if q %}
+                                        {% if q or r %}
                                             <form method="GET" name="search_grupo"
                                                   action="{{ lista_de_grupo_url }}"
                                                   class="search-bar position-relative mb-sm-0 mb-2 d-flex align-items-center">
-                                                <label>
+                                                <div class="input-group">
                                                     <input type="text"
                                                            name="q"
                                                            class="form-control"
                                                            placeholder="Buscar..."
-                                                           value="{{ request.GET.q }}"/>
-                                                </label>
+                                                           value="{{ request.GET.q }}"
+                                                           id="search-input"/>
+                                                    <input type="text" id="range-datepicker"
+                                                           class="form-control"
+                                                           name="r"
+                                                           placeholder="Selecciona rango"
+                                                           value="{{ request.GET.r }}"/>
+                                                    <button class="btn btn-outline-secondary"
+                                                            style="border: 1px solid var(--ct-border-color);border-top-right-radius: 30px; border-bottom-right-radius: 30px;"
+                                                            type="submit">
+                                                        <i class="mdi mdi-magnify"></i>
+                                                    </button>
+                                                </div>
                                                 <a href="{{ lista_de_grupo_url }}">
                                                     <span class="mdi mdi-close-circle"></span>
                                                 </a>
@@ -46,12 +54,22 @@
                                             <form method="GET" name="search_grupo"
                                                   action="{{ lista_de_grupo_url }}"
                                                   class="search-bar position-relative mb-sm-0 mb-2">
-                                                <label>
+                                                <div class="input-group">
                                                     <input type="text"
                                                            name="q"
                                                            class="form-control"
-                                                           placeholder="Buscar..."/>
-                                                </label>
+                                                           placeholder="Buscar..."
+                                                           id="search-input"/>
+                                                    <input type="text" id="range-datepicker"
+                                                           class="form-control"
+                                                           name="r"
+                                                           placeholder="Selecciona rango"/>
+                                                    <button class="btn btn-outline-secondary"
+                                                            style="border: 1px solid var(--ct-border-color);border-top-right-radius: 30px; border-bottom-right-radius: 30px;"
+                                                            type="submit">
+                                                        <i class="mdi mdi-magnify"></i>
+                                                    </button>
+                                                </div>
                                                 <span class="mdi mdi-magnify"></span>
                                             </form>
                                         {% endif %}
@@ -86,6 +104,7 @@
                                         <tr class="odd">
                                             <th>Nombre</th>
                                             <th>Descripción</th>
+                                            <th>Fecha de Creación</th>
                                             {% if perms.envios.change_grupo or perms.envios.delete_grupo %}
                                                 <th class="text-center" style="width: 150px;">Acción</th>
                                             {% endif %}
@@ -104,6 +123,7 @@
                                                     </p>
                                                 </td>
                                                 <td>{{ grupo.descripcion }}</td>
+                                                <td>{{ grupo.fecha_creacion }}</td>
                                                 {% if perms.envios.change_grupo or perms.envios.delete_grupo %}
                                                     <td class="text-center">
                                                         {% if perms.envios.change_grupo %}
@@ -124,22 +144,24 @@
                                                                 <i class="mdi mdi-delete"></i>
                                                             </button>
                                                         {% endif %}
-                                                    <br/>
-                                                    {% if perms.base.extract_grupo_plano %}
+                                                        <br/>
+                                                        {% if perms.base.extract_grupo_plano %}
                                                             {% safe_url 'grupo_plano' grupo.pk as grupo_plano_url %}
                                                             <a href="{{ grupo_plano_url }}"
+                                                               id="extraccion_masa"
                                                                class="btn btn-outline-info rounded-pill waves-effect waves-light"
                                                                style="border: none;">
                                                                 <i class="mdi mdi-text-box-search"></i>
                                                             </a>
                                                         {% endif %}
-                                                    {% if perms.base.view_imagenes_grupo %}
-                                                        {% safe_url 'imagenes_grupo' grupo.pk as imagenes_grupo_url %}
-                                                        <a href="{{ imagenes_grupo_url }}"
-                                                           class="btn btn-outline-success rounded-pill waves-effect waves-light"
-                                                           style="border: none;">
-                                                            <i class="mdi mdi-eye"></i> </a>
-                                                    {% endif %}
+                                                        {% if perms.base.view_imagenes_grupo %}
+                                                            {% safe_url 'imagenes_grupo' grupo.pk as imagenes_grupo_url %}
+                                                            <a href="{{ imagenes_grupo_url }}"
+                                                               id="imagenes_grupo"
+                                                               class="btn btn-outline-success rounded-pill waves-effect waves-light"
+                                                               style="border: none;">
+                                                                <i class="mdi mdi-eye"></i> </a>
+                                                        {% endif %}
                                                     </td>
                                                 {% endif %}
                                             </tr>
@@ -165,6 +187,11 @@
 {% endblock %}
 
 {% block extrajs %}
+    <script src="{% static 'libs/flatpickr/flatpickr.min.js' %}"></script>
+    <script src="{% static 'libs/flatpickr/l10n/es.js' %}"></script>
+    <script src="{% static 'libs/multiselect/js/jquery.multi-select.js' %}"></script>
+    <script src="{% static 'libs/select2/js/select2.min.js' %}"></script>
+    <script src="{% static 'libs/select2/js/i18n/es.js' %}"></script>
     <script type="text/javascript">
         {% if perms.envios.change_grupo or perms.envios.admin_grupo%}
             function abrir_edicion(url) {
@@ -214,6 +241,32 @@
                     });
                 }
             {% endif %}
+            {% if perms.envios.extract_grupo_plano%}
+                let extraccion_masa = document.querySelectorAll('#extraccion_masa');
+                if (extraccion_masa) {
+                    extraccion_masa.forEach(function (extraccion_masa) {
+                        extraccion_masa.addEventListener('mouseover', function () {
+                            this.setAttribute('title', 'Extracción en Masa');
+                        });
+                        extraccion_masa.addEventListener('mouseout', function () {
+                            this.removeAttribute('title')
+                        });
+                    });
+                }
+            {% endif %}
+            {% if perms.envios.view_imagenes_grupo%}
+                let imagenes_grupo = document.querySelectorAll('#imagenes_grupo');
+                if (imagenes_grupo) {
+                    imagenes_grupo.forEach(function (imagenes_grupo) {
+                        imagenes_grupo.addEventListener('mouseover', function () {
+                            this.setAttribute('title', 'Ver Imágenes del Grupo');
+                        });
+                        imagenes_grupo.addEventListener('mouseout', function () {
+                            this.removeAttribute('title')
+                        });
+                    });
+                }
+            {% endif %}
         });
     </script>
     <script>
@@ -227,12 +280,25 @@
             }
         }
     </script>
+
+    <script type="text/javascript">
+        $('#range-datepicker').flatpickr({
+            locale: 'es',
+            dateFormat: "d-m-Y",
+            mode: "range",
+            onChange: function (selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    instance.close();
+                }
+            }
+        })
+    </script>
 {% endblock %}
-<script>
-    // Mostrar el spinner cuando la página esté cargando
-    window.onload = function () {
-        document.getElementById('spinner').style.display = 'block';
-    }
-</script>
+{#<script>#}
+{#    // Mostrar el spinner cuando la página esté cargando#}
+{#    window.onload = function () {#}
+{#        document.getElementById('spinner').style.display = 'block';#}
+{#    }#}
+{#</script>#}
 
 

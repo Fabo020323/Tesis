@@ -44,7 +44,7 @@ class GrupoListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         date_range = self.request.GET.get("r", "")
         if query:
             queryset = (queryset.filter(nombre__icontains=query))
-        return filter_query_date_range(date_range, queryset, 'fecha')
+        return filter_query_date_range(date_range, queryset, 'fecha_creacion')
 
 
 class GrupoCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):

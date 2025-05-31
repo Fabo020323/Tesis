@@ -86,6 +86,7 @@
                                             <th>Nombre</th>
                                             <th>Descripción</th>
                                             <th>Grupo</th>
+                                            <th>Fecha de añadido</th>
                                             {% if perms.base.change_imagen or perms.base.delete_imagen %}
                                                 <th class="text-center" style="width: 150px;">Acción</th>
                                             {% endif %}
@@ -117,6 +118,7 @@
                                                     {% if imagen.grupo %}{{ imagen.grupo }}{% else %}No ha sido
                                                         asignado{% endif %}
                                                 </td>
+                                                <td>{{ imagen.fecha_creacion }}</td>
                                                 {% if perms.base.change_imagen or perms.base.delete_imagen %}
                                                     <td class="text-center">
                                                         {% if perms.base.change_imagen %}
@@ -141,33 +143,37 @@
                                                         {% if perms.base.extract_plano and not imagen.analizado %}
                                                             {% safe_url 'plano' imagen.pk as plano_url %}
                                                             <a href="{{ plano_url }}"
+                                                               id="plano"
                                                                class="btn btn-outline-info rounded-pill waves-effect waves-light extract"
                                                                style="border: none;">
                                                                 <i class="mdi mdi-text-box-search"></i>
                                                             </a>
                                                         {% endif %}
+                                                        {% if perms.base.extract_formateado and not imagen.analizado %}
+                                                            {% safe_url 'formateado' imagen.pk as formateado_url %}
+                                                            <a href="{{ formateado_url }}"
+                                                               id="formateado"
+                                                               class="btn btn-outline-info rounded-pill waves-effect waves-light extract"
+                                                               style="border: none;">
+                                                                <i class="mdi mdi-format-list-text"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                        <br/>
                                                         {% if perms.base.view_analisis_imagen and imagen.hay_texto_extraido and imagen.analizado %}
                                                             {% safe_url 'ver_plano' imagen.pk as ver_plano_url %}
                                                             <a onclick="abrir_ver('{{ ver_plano_url }}')"
+                                                               id="ver_plano"
                                                                class="btn btn-outline-success rounded-pill waves-effect waves-light"
                                                                style="border: none;">
-                                                                <i class="mdi mdi-eye"></i> </a>
+                                                                <i class="mdi mdi-file-eye"></i> </a>
                                                         {% endif %}
-                                                    <br/>
-                                                    {% if perms.base.extract_formateado and not imagen.analizado %}
-                                                            {% safe_url 'formateado' imagen.pk as formateado_url %}
-                                                            <a href="{{ formateado_url }}"
-                                                               class="btn btn-outline-info rounded-pill waves-effect waves-light extract"
-                                                               style="border: none;">
-                                                                <i class="mdi mdi-text-box-search"></i>
-                                                            </a>
-                                                        {% endif %}
-                                                    {% if perms.base.view_analisis_imagen and imagen.hay_texto_extraido and imagen.analizado %}
+                                                        {% if perms.base.view_analisis_imagen and imagen.hay_texto_extraido and imagen.analizado %}
                                                             {% safe_url 'ver_formato' imagen.pk as ver_formato_url %}
                                                             <a onclick="abrir_ver('{{ ver_formato_url }}')"
+                                                               id="ver_formateado"
                                                                class="btn btn-outline-success rounded-pill waves-effect waves-light"
                                                                style="border: none;">
-                                                                <i class="mdi mdi-eye"></i> </a>
+                                                                <i class="mdi mdi-file-document-multiple"></i> </a>
                                                         {% endif %}
                                                     </td>
 
@@ -249,6 +255,58 @@
                             this.setAttribute('title', 'Eliminar');
                         });
                         botonEliminar.addEventListener('mouseout', function () {
+                            this.removeAttribute('title')
+                        });
+                    });
+                }
+            {% endif %}
+            {% if perms.base.extract_plano %}
+                let plano = document.querySelectorAll('#plano');
+                if (plano) {
+                    plano.forEach(function (plano) {
+                        plano.addEventListener('mouseover', function () {
+                            this.setAttribute('title', 'Extraer sin formato');
+                        });
+                        plano.addEventListener('mouseout', function () {
+                            this.removeAttribute('title')
+                        });
+                    });
+                }
+            {% endif %}
+            {% if perms.base.extract_formateado %}
+                let formateado = document.querySelectorAll('#formateado');
+                if (formateado) {
+                    formateado.forEach(function (formateado) {
+                        formateado.addEventListener('mouseover', function () {
+                            this.setAttribute('title', 'Extraer con formato');
+                        });
+                        formateado.addEventListener('mouseout', function () {
+                            this.removeAttribute('title')
+                        });
+                    });
+                }
+            {% endif %}
+            {% if perms.base.view_analisis_imagen %}
+                let ver_plano = document.querySelectorAll('#ver_plano');
+                if (ver_plano) {
+                    ver_plano.forEach(function (ver_plano) {
+                        ver_plano.addEventListener('mouseover', function () {
+                            this.setAttribute('title', 'Ver sin formato');
+                        });
+                        ver_plano.addEventListener('mouseout', function () {
+                            this.removeAttribute('title')
+                        });
+                    });
+                }
+            {% endif %}
+            {% if perms.base.view_analisis_imagen %}
+                let ver_formateado = document.querySelectorAll('#ver_formateado');
+                if (ver_formateado) {
+                    ver_formateado.forEach(function (ver_formateado) {
+                        ver_formateado.addEventListener('mouseover', function () {
+                            this.setAttribute('title', 'Ver con formato');
+                        });
+                        ver_formateado.addEventListener('mouseout', function () {
                             this.removeAttribute('title')
                         });
                     });

@@ -154,8 +154,11 @@ class ExtraerTextoViewFormateado(LoginRequiredMixin, PermissionRequiredMixin, Vi
                 imagen=imagen,
                 texto_extraido=res
             )
-            imagen.run_analizado()
-            messages.success(request, "El texto ha sido extraído correctamente")
+            if extraccion:
+                imagen.run_analizado()
+                messages.success(request, "El texto ha sido extraído correctamente")
+            else:
+                messages.error(request, "El texto no ha sido extraído correctamente")
         except Exception as e:
             messages.error(request, "Ha ocurrido un error durante el proceso" + str(e))
         return redirect(referer_url)

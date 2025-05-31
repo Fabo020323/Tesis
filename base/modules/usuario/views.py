@@ -10,7 +10,7 @@ from base.modules.usuario.forms import UserForm, ThemeSettingsForm
 from django.contrib.auth.models import Group
 from django.contrib import messages
 
-from base_Fabian.utils import update_paginate
+from base_Fabian.utils import update_paginate, filter_query_date_range
 
 
 class UsuarioListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
@@ -31,16 +31,18 @@ class UsuarioListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         queryset = super().get_queryset()
         queryset = queryset.filter(is_superuser=False).distinct()
         query = self.request.GET.get("q", "")
+        date_range = self.request.GET.get("r", "")
         if query:
             queryset = (queryset.filter(first_name__icontains=query) |
                         queryset.filter(last_name__icontains=query) |
                         queryset.filter(email__icontains=query) |
                         queryset.filter(groups__name__icontains=query))
-        return queryset
+        return filter_query_date_range(date_range, queryset, 'date_joined')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['q'] = self.request.GET.get("q", "")
+        context['r'] = self.request.GET.get('r', "")
         context['i'] = self.request.GET.get('i', update_paginate())
         context['form'] = UserForm
         context['breadcrumb'] = [
