@@ -9,7 +9,9 @@
             {% safe_url 'ver_formato' object.pk as ver_formato_url%}
             <form action="{{ ver_formato_url }}" method="get">
                 <div class="modal-body">
-                    <h4>El texto extraído es:  {{ analisis }}</h4>
+                   <pre class="bg-light p-3 border rounded" style=" font-family: 'Courier New', monospace;">
+                        {{ analisis }}
+                    </pre>
                 </div>
                 <div class="modal-footer">
                 <button class="btn btn-primary" type="button" data-bs-dismiss="modal">Cerrar</button>

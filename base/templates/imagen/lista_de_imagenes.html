@@ -23,7 +23,7 @@
                                 <div class="row justify-content-between mb-2">
                                     <div class="col-auto">
                                         {% safe_url 'lista_de_imagen' as lista_de_imagen_url %}
-                                        {% if q %}
+                                        {% if q or r or t %}
                                             <form method="GET" name="search_imagen"
                                                   action="{{ lista_de_imagen_url }}"
                                                   class="search-bar position-relative mb-sm-0 mb-2 d-flex align-items-center">
@@ -34,6 +34,15 @@
                                                            placeholder="Buscar..."
                                                            value="{{ request.GET.q }}"
                                                            id="search-input"/>
+                                                    <select name="t" class="form-select">
+                                                        <option value="">Grupo</option>
+                                                        {% for grupo in grupos %}
+                                                            <option value="{{ grupo.nombre }}"
+                                                                    {% if request.GET.t == grupo.nombre %}selected{% endif %}>
+                                                                    {{ grupo.nombre }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
                                                     <input type="text" id="range-datepicker"
                                                            class="form-control"
                                                            name="r"
@@ -59,6 +68,15 @@
                                                            class="form-control"
                                                            placeholder="Buscar..."
                                                            id="search-input"/>
+                                                    <select name="t" class="form-select">
+                                                        <option value="">Grupos</option>
+                                                        {% for grupo in grupos %}
+                                                                    <option value="{{ grupo.nombre }}"
+                                                                            {% if request.GET.t == grupo.pk|stringformat:'s' %}selected{% endif %}>
+                                                                        {{ grupo.nombre }}
+                                                                    </option>
+                                                        {% endfor %}
+                                                    </select>
                                                     <input type="text" id="range-datepicker"
                                                            class="form-control"
                                                            name="r"

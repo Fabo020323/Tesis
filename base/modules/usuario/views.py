@@ -67,6 +67,7 @@ class UsuarioCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView)
             grupo = request.POST.get('group')
             grupo = Group.objects.get(id=grupo)
             usuario.groups.add(grupo)
+            usuario.is_active = True
 
             usuario.save()
             # Enviar correo al usuario

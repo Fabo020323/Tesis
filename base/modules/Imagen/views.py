@@ -10,7 +10,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, V
 
 from base.modules.Tipo.models import Tipo
 from base_Fabian import settings
-from base_Fabian.utils import update_paginate, filter_query_date_range
+from base_Fabian.utils import update_paginate, filter_query_date_range, formato_analisis_ocr
 from django.urls import reverse_lazy
 
 
@@ -29,6 +29,8 @@ class ImagenListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         context['q'] = self.request.GET.get('q', "")
         context['r'] = self.request.GET.get('r', "")
         context['i'] = self.request.GET.get('i', update_paginate())
+        context['i'] = self.request.GET.get('i', update_paginate())
+        context['grupos'] = Grupo.objects.all()
         context['breadcrumbs'] = [
             {'text': 'Inicio', 'url': '/'},
             {'text': 'Imágenes', 'url': reverse_lazy('lista_de_imagen')},
@@ -40,6 +42,9 @@ class ImagenListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         queryset = Imagen.objects.filter(user=user)
         query = self.request.GET.get('q', "")
         date_range = self.request.GET.get("r", "")
+        grupo = self.request.GET.get('t', "")
+        if grupo:
+            queryset = queryset.filter(grupo__nombre=grupo)
         if query:
             queryset = (queryset.filter(nombre__icontains=query))
         return filter_query_date_range(date_range, queryset, 'fecha')
@@ -92,8 +97,8 @@ class ExtraerTextoViewPlano(LoginRequiredMixin, PermissionRequiredMixin, View):
 
         referer_url = request.META.get('HTTP_REFERER', self.success_url)
 
-        if imagen.analizado is True:
-            messages.error(request, 'La imagen ya ha sido analizada')
+        if imagen.sin_formato is True:
+            messages.error(request, 'La imagen ya resivido este tipo de analisis')
             return redirect(referer_url)
 
         if not imagen.imagen:
@@ -141,8 +146,8 @@ class ExtraerTextoViewFormateado(LoginRequiredMixin, PermissionRequiredMixin, Vi
 
         referer_url = request.META.get('HTTP_REFERER', self.success_url)
 
-        if imagen.analizado is True:
-            messages.error(request, 'La imagen ya ha sido analizada')
+        if imagen.con_formato is True:
+            messages.error(request, 'La imagen ya ha resivido este tipo de analisis')
             return redirect(referer_url)
 
         if not imagen.imagen:
@@ -178,5 +183,6 @@ class VerAnalisisFormateadoView(LoginRequiredMixin, PermissionRequiredMixin, Det
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         imagen = get_object_or_404(Imagen, pk=self.kwargs['pk'])
-        context['analisis'] = imagen.obtener_texto_extraido()
+        analisis_formateado = imagen.analisis.get(tipo=Tipo.objects.get(pk=2))
+        context['analisis'] =  formato_analisis_ocr(analisis_formateado)
         return context

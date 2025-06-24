@@ -31,7 +31,9 @@ class GrupoListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['q'] = self.request.GET.get('q', "")
         context['r'] = self.request.GET.get('r', "")
+        context['t'] = self.request.GET.get('t', "")
         context['i'] = self.request.GET.get('i', update_paginate())
+        context['grupos'] = Grupo.objects.all()
         context['breadcrumbs'] = [
             {'text': 'Inicio', 'url': '/'},
             {'text': 'Grupos', 'url': reverse_lazy('lista_de_grupo')},
@@ -42,6 +44,9 @@ class GrupoListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         user = self.request.user
         queryset = Grupo.objects.filter(user=user)
         query = self.request.GET.get('q', "")
+        grupo = self.request.GET.get('t', "")
+        if grupo:
+            queryset = queryset.filter(grupo=grupo)
         date_range = self.request.GET.get("r", "")
         if query:
             queryset = (queryset.filter(nombre__icontains=query))

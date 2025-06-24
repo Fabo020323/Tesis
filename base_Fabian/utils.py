@@ -1,4 +1,7 @@
+import json
 import os
+import re
+
 import pytz
 from datetime import datetime
 import random
@@ -56,3 +59,37 @@ def filter_query_date_range(date_range, queryset, fecha='fecha'):
         except ValueError:
             pass
     return queryset
+
+
+def formato_analisis_ocr(entrada):
+    def es_json_valido(cadena):
+        try:
+            json.loads(cadena)
+            return True
+        except (ValueError, TypeError):
+            return False
+
+        # Si se le pasa un objeto Analisis, intenta extraer el campo 'valor'
+
+    if hasattr(entrada, 'valor'):
+        texto = entrada.valor
+    else:
+        texto = entrada
+
+        # Si ya es un diccionario (p. ej. json.loads ya aplicado)
+    if isinstance(texto, dict):
+        return json.dumps(texto, indent=4, ensure_ascii=False)
+
+        # Si es un string y parece JSON
+    if isinstance(texto, str) and es_json_valido(texto):
+        texto = texto.strip()  # Limpia espacios y saltos iniciales/finales
+
+        # Elimina indentaciones innecesarias en múltiples líneas
+        texto = re.sub(r'^[ \t]+', '', texto, flags=re.MULTILINE)
+
+        texto = re.sub(r'\\title\{(.*?)\}', r'\n📌 \1\n', texto, flags=re.DOTALL)
+        texto = re.sub(r'\\section\*\{(.*?)\}', r'\n• \1', texto, flags=re.DOTALL)
+        texto = re.sub(r'\n+', '\n', texto).strip()
+
+        # En caso de otro tipo no esperado
+    return str(texto)
