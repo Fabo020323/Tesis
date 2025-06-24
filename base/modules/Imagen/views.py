@@ -78,6 +78,7 @@ class ImagenDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Imagen
     template_name = 'imagen/eliminar_imagen.html'
     permission_required = 'base.delete_imagen'
+    success_url = reverse_lazy('lista_de_imagen')
 
 
 class ExtraerTextoViewPlano(LoginRequiredMixin, PermissionRequiredMixin, View):

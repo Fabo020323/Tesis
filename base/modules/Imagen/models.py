@@ -31,17 +31,17 @@ class Imagen(models.Model):
     def __str__(self):
         return self.nombre
 
-    def run_analizado(self):
+
+    def run_con_formato(self):
+        self.con_formato = True
         self.analizado = True
         self.fecha_analizado = now()
         self.save()
 
-    def run_con_formato(self):
-        self.con_formato = True
-        self.save()
-
     def run_sin_formato(self):
         self.sin_formato = True
+        self.analizado = True
+        self.fecha_analizado = now()
         self.save()
 
     @property

@@ -11,6 +11,7 @@ from base.modules.Grupos_Imagenes.models import Grupo
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, View, TemplateView
 
 from base.modules.Imagen.models import Imagen
+from base.modules.Tipo.models import Tipo
 from base_Fabian import settings
 from base_Fabian.utils import update_paginate, filter_query_date_range
 from django.urls import reverse_lazy
@@ -99,20 +100,17 @@ class ExtraerTextoGrupoPlanoView(LoginRequiredMixin, PermissionRequiredMixin, Vi
 
         for imagen in imagenes:
             if imagen.imagen:
-                if not imagen.analizado:
+                if not imagen.sin_formato:
                     path_image_temp = os.path.join(settings.MEDIA_ROOT, str(imagen.imagen))
                     try:
                         res = model.chat(tokenizer, path_image_temp, ocr_type='ocr')
-
                         extraccion = Analisis.objects.create(
                             imagen=imagen,
                             texto_extraido=res,
-                            tipo='plano'
+                            tipo=Tipo.objects.get(pk=1)
                         )
-
-                        imagen.run_analizado()
+                        imagen.run_sin_formato()
                         messages.success(request, "El texto ha sido extraído correctamente")
-
                     except Exception as e:
                         messages.error(request, f"No se ha podido procesar la imagen {imagen.nombre}")
         return redirect('lista_de_grupo')

@@ -74,6 +74,11 @@
                                             </form>
                                         {% endif %}
                                     </div>
+                                    <div id="spinner_group" style="display: none;" class="col-auto">
+                                        <div class="spinner-overlay">
+                                            <div class="spinner"></div>
+                                        </div>
+                                    </div>
                                     {% if perms.envios.add_grupo %}
                                         <div class="col-auto">
                                             {% safe_url 'crear_grupo' as crear_grupo_url %}
@@ -90,12 +95,6 @@
                                             </form>
                                         </div>
                                     {% endif %}
-                                </div>
-                                <div id="spinner" style="display: none;">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Cargando...</span>
-                                    </div>
-                                    <p>Procesando imágenes, por favor espere...</p>
                                 </div>
                                 <div class="table-responsive">
                                     <table class="table table-centered table-hover dt-responsive nowrap w-100"
@@ -149,7 +148,7 @@
                                                             {% safe_url 'grupo_plano' grupo.pk as grupo_plano_url %}
                                                             <a href="{{ grupo_plano_url }}"
                                                                id="extraccion_masa"
-                                                               class="btn btn-outline-info rounded-pill waves-effect waves-light"
+                                                               class="btn btn-outline-info rounded-pill waves-effect waves-light extract_group"
                                                                style="border: none;">
                                                                 <i class="mdi mdi-text-box-search"></i>
                                                             </a>
@@ -291,6 +290,17 @@
                     instance.close();
                 }
             }
+        })
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const link_extract = document.querySelectorAll('.extract_group');
+            link_extract.forEach(link => {
+                link.addEventListener('click', function (event) {
+                    const spinner = document.getElementById('spinner_group');
+                    spinner.style.display = 'block';
+                })
+            })
         })
     </script>
 {% endblock %}
