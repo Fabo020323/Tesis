@@ -7,6 +7,8 @@ from base.modules.Grupos_Imagenes.models import Grupo
 from base.modules.Imagen.forms import ImagenForm
 from base.modules.Imagen.models import Imagen
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, View, DetailView, TemplateView
+
+from base.modules.Tipo.models import Tipo
 from base_Fabian import settings
 from base_Fabian.utils import update_paginate, filter_query_date_range
 from django.urls import reverse_lazy
@@ -104,9 +106,10 @@ class ExtraerTextoViewPlano(LoginRequiredMixin, PermissionRequiredMixin, View):
 
             extraccion = Analisis.objects.create(
                 imagen=imagen,
-                texto_extraido=res
+                texto_extraido=res,
+                tipo=Tipo.objects.get(pk=1)
             )
-            imagen.run_analizado()
+            imagen.run_sin_formato()
             messages.success(request, "El texto ha sido extraído correctamente")
         except Exception as e:
             messages.error(request, "Ha ocurrido un error durante el proceso" + str(e))
@@ -152,10 +155,11 @@ class ExtraerTextoViewFormateado(LoginRequiredMixin, PermissionRequiredMixin, Vi
 
             extraccion = Analisis.objects.create(
                 imagen=imagen,
-                texto_extraido=res
+                texto_extraido=res,
+                tipo = Tipo.objects.get(pk=2)
             )
             if extraccion:
-                imagen.run_analizado()
+                imagen.run_con_formato()
                 messages.success(request, "El texto ha sido extraído correctamente")
             else:
                 messages.error(request, "El texto no ha sido extraído correctamente")

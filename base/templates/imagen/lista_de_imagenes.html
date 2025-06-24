@@ -140,7 +140,7 @@
                                                             </button>
                                                         {% endif %}
                                                         <br/>
-                                                        {% if perms.base.extract_plano and not imagen.analizado %}
+                                                        {% if perms.base.extract_plano and not imagen.sin_formato %}
                                                             {% safe_url 'plano' imagen.pk as plano_url %}
                                                             <a href="{{ plano_url }}"
                                                                id="plano"
@@ -159,7 +159,7 @@
                                                             </a>
                                                         {% endif %}
                                                         <br/>
-                                                        {% if perms.base.view_analisis_imagen and imagen.hay_texto_extraido and imagen.analizado %}
+                                                        {% if perms.base.view_analisis_imagen and imagen.hay_texto_extraido and imagen.sin_formato %}
                                                             {% safe_url 'ver_plano' imagen.pk as ver_plano_url %}
                                                             <a onclick="abrir_ver('{{ ver_plano_url }}')"
                                                                id="ver_plano"

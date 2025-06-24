@@ -16,7 +16,7 @@ HTTPS = os.getenv("HTTPS")
 
 PORT = os.getenv('SITE_PORT')
 
-ALLOWED_HOSTS = [f'{SITE_DOMAIN}']
+ALLOWED_HOSTS = [f'{SITE_DOMAIN}','127.0.0.1']
 
 SESSION_COOKIE_SECURE = True
 

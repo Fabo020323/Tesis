@@ -9,11 +9,13 @@ class Imagen(models.Model):
     nombre = models.CharField(max_length=200)
     imagen = models.ImageField(upload_to='imagenes/', blank=True, null=True, default='default/OCR.png')
     descripcion = models.TextField(max_length=100, null=True, blank=True, default='')
-    analizado = models.BooleanField(default=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='user_imagen')
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_analizado = models.DateTimeField(null=True, blank=True)
     grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE, null=True, blank=True, related_name='imagenes')
+    con_formato = models.BooleanField(default=False)
+    sin_formato = models.BooleanField(default=False)
+    analizado = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'Imagen'
@@ -32,6 +34,14 @@ class Imagen(models.Model):
     def run_analizado(self):
         self.analizado = True
         self.fecha_analizado = now()
+        self.save()
+
+    def run_con_formato(self):
+        self.con_formato = True
+        self.save()
+
+    def run_sin_formato(self):
+        self.sin_formato = True
         self.save()
 
     @property

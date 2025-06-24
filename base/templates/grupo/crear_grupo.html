@@ -12,13 +12,13 @@
                     {% csrf_token %}
                     <div class="row">
                         <div class="col-md-12 mb-3">
-                            <label for="id_nombre" class="form-label">Nombre</label>
+                            <label for="id_nombre" class="form-label">Nombre(*)</label>
                             {{ form.nombre }}
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-12 mb-3">
-                            <label for="id_descripcion" class="form-label">Nombre Producto</label>
+                            <label for="id_descripcion" class="form-label">Descripción(*)</label>
                             {{ form.descripcion }}
                         </div>
                     </div>

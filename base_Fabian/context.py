@@ -7,8 +7,6 @@ def custom_context(request):
         'site_names': 'DjangoMVT',
         'current_year': datetime.now().year,
         'version': Configuracion.objects.get(llave='version').valor,
-        'rastreo': Configuracion.objects.get(llave='rastreo').valor,
-        'credito': Configuracion.objects.get(llave='credito').valor,
         'is_user_authenticated': request.user.is_authenticated,
         'user_settings': {
             'theme_color_scheme': request.user.theme_color_scheme if request.user.is_authenticated else None,
