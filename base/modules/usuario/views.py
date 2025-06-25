@@ -199,19 +199,3 @@ class UsuarioListdatosView(LoginRequiredMixin, PermissionRequiredMixin, View):
         return JsonResponse(data)
 
 
-class NuevaContrasennaView(UpdateView):
-    template_name = 'usuario/modal_password.html'
-    form_class = CambiarPasswordForm
-    success_url = reverse_lazy('base')
-
-    def get_object(self):
-        return self.request.user
-
-    def form_valid(self, form):
-        user = self.get_object()
-        user.set_password(form.cleaned_data['password'])
-        user.fecha_activacion = timezone.now()
-        user.save()
-        from django.contrib.auth import update_session_auth_hash
-        update_session_auth_hash(self.request, user)
-        return super().form_valid(form)

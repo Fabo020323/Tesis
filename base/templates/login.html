@@ -5,63 +5,148 @@
     <meta charset="utf-8"/>
     <title>Spider OCR</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content='Sipider OCR' name="author"/>
-    <meta content="version" name="{{ version }}"/>
-    <link rel="shortcut icon" href="  {% static '/images/OCR.png' %} ">
-    <script src=" {% static '/js/head.js' %}"></script>
-    <link href="{% static '/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" id="app-style"/>
-    <link href="{% static '/css/app.min.css' %}" rel="stylesheet" type="text/css"/>
-    <link href="{% static '/css/icons.min.css' %}" rel="stylesheet" type="text/css"/>
+    <meta content="Spider OCR" name="author"/>
+    <link rel="shortcut icon" href="{% static '/images/OCR.png' %}">
+    <link href="{% static '/css/bootstrap.min.css' %}" rel="stylesheet"/>
+    <link href="{% static '/css/app.min.css' %}" rel="stylesheet"/>
+    <link href="{% static '/css/icons.min.css' %}" rel="stylesheet"/>
 </head>
 <body class="authentication-bg authentication-bg-pattern">
 <div class="auth-fluid">
-    <!--Auth fluid left content -->
+    <!-- Login Form -->
     <div class="auth-fluid-form-box">
         <div class="align-items-center d-flex h-100">
             <div class="p-3">
-                <!-- title-->
                 <h4 class="mt-0">Iniciar Sesión</h4>
-                <p class="text-muted mb-4">Introduzca usuario y contraseña para acceder a su cuente.</p>
+                <p class="text-muted mb-4">Introduzca usuario y contraseña para acceder a su cuenta.</p>
 
-                <!-- form -->
-                <form method="POST">
+                <form id="loginForm">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="id_username" class="form-label">Usuario</label>
-                        <input class="form-control" type="text" name="username" id="id_username" required
-                               placeholder="Entrar usuario">
+                        <input class="form-control" type="text" name="username" id="id_username" required>
                     </div>
                     <div class="mb-3">
                         <label for="id_password" class="form-label">Contraseña</label>
-                        <div class="input-group input-group-merge">
-                            <input type="password" id="id_password" class="form-control" placeholder="Entrar contraseña"
-                                   name="password" required>
-                            <div class="input-group-text" data-password="false">
-                                <span class="password-eye"></span>
-                            </div>
-                        </div>
+                        <input type="password" id="id_password" class="form-control" name="password" required>
                     </div>
                     <div class="text-center d-grid">
-                        <button class="btn btn-primary" type="submit"> Entrar</button>
+                        <button class="btn btn-primary" type="submit">Entrar</button>
                     </div>
+                    <div class="mt-2 text-danger" id="loginError" style="display: none;"></div>
                 </form>
-            </div> <!-- end .card-body -->
-        </div> <!-- end .align-items-center.d-flex.h-100-->
+            </div>
+        </div>
     </div>
-    <!-- end auth-fluid-form-box-->
 
-    <!-- Auth fluid right content -->
+    <!-- Imagen lateral -->
     <div class="auth-fluid-right text-center">
         <div class="auth-user-testimonial">
             <h2 class="mb-3 text-white">Spider OCR!</h2>
-            <p class="lead"><i class="mdi mdi-format-quote-open"></i> Introduzca sus imágenes para obtener el texto en ellas
-                existente a través de técnicas de OCR  <i class="mdi mdi-format-quote-close"></i>
+            <p class="lead text-white">
+                <i class="mdi mdi-format-quote-open"></i>
+                Introduzca sus imágenes para obtener el texto en ellas existente a través de técnicas de OCR
+                <i class="mdi mdi-format-quote-close"></i>
             </p>
-            
-        </div> 
+        </div>
     </div>
 </div>
+
+<!-- Modal para cambiar contraseña -->
+<div class="modal fade" id="modalCambio" tabindex="-1" aria-labelledby="modalCambioLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form id="passwordForm" class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="modalCambioLabel">Cambiar contraseña</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="new_password" class="form-label">Nueva contraseña</label>
+                    <input type="password" class="form-control" id="new_password" required>
+                </div>
+                <div class="mb-3">
+                    <label for="confirm_password" class="form-label">Confirmar contraseña</label>
+                    <input type="password" class="form-control" id="confirm_password" required>
+                </div>
+                <div class="text-danger" id="passwordError" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-success">Confirmar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script src="{% static '/js/vendor.min.js' %}"></script>
-<script src="{% static '/js/pages/authentication.init.js' %}"></script>
+<script>
+    const loginForm = document.getElementById("loginForm");
+    const passwordForm = document.getElementById("passwordForm");
+    const modal = new bootstrap.Modal(document.getElementById("modalCambio"));
+
+    loginForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const username = document.getElementById("id_username").value;
+        const password = document.getElementById("id_password").value;
+
+        fetch("{% url 'login' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify({username, password})
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error("Credenciales inválidas");
+            }
+            return response.json();
+        }).then(data => {
+            if (data.success) {
+                if (data.fecha_activacion) {
+                    window.location.href = "{% url 'base' %}";
+                } else {
+                    modal.show();
+                }
+            }
+        }).catch(err => {
+            document.getElementById("loginError").innerText = err.message;
+            document.getElementById("loginError").style.display = "block";
+        });
+    });
+
+    passwordForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const password = document.getElementById("new_password").value;
+        const confirm = document.getElementById("confirm_password").value;
+        const errorDiv = document.getElementById("passwordError");
+
+        if (password !== confirm) {
+            errorDiv.innerText = "Las contraseñas no coinciden.";
+            errorDiv.style.display = "block";
+            return;
+        }
+
+        fetch("{% url 'api_cambiar_contrasena' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify({password})
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error("Error al cambiar la contraseña");
+            }
+            window.location.href = "{% url 'base' %}";
+        }).catch(err => {
+            errorDiv.innerText = err.message;
+            errorDiv.style.display = "block";
+        });
+    });
+</script>
 </body>
 </html>

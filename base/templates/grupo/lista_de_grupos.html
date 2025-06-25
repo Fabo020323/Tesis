@@ -153,14 +153,7 @@
                                                                 <i class="mdi mdi-text-box-search"></i>
                                                             </a>
                                                         {% endif %}
-                                                    {% if perms.base.extract_grupo_plano %}
-                                                            {% safe_url 'reporte_imagenes_pdf' grupo.pk as reporte_imagenes_pdf_url %}
-                                                            <a href="{{ reporte_imagenes_pdf_url }}"
-                                                               class="btn btn-outline-info rounded-pill waves-effect waves-light"
-                                                               style="border: none;">
-                                                                <i class="mdi mdi-text-box-search"></i>
-                                                            </a>
-                                                        {% endif %}
+
 
                                                         {% if perms.base.view_imagenes_grupo %}
                                                             {% safe_url 'imagenes_grupo' grupo.pk as imagenes_grupo_url %}

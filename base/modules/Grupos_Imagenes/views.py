@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from reportlab.lib.pagesizes import letter
+from reportlab.lib.utils import simpleSplit
 from reportlab.pdfgen import canvas
 
 from base.modules.Analisis.models import Analisis
@@ -170,8 +171,14 @@ class ListImagenesGruposView(LoginRequiredMixin, PermissionRequiredMixin, Templa
 
 
 class ReporteImagenesPDFView(View):
-    def get(self, request, grupo_id, *args, **kwargs):
+    def draw_wrapped_text(self, p, text, x, y, max_width, font_name="Helvetica", font_size=10, leading=12):
+        lines = simpleSplit(text, font_name, font_size, max_width)
+        for line in lines:
+            p.drawString(x, y, line)
+            y -= leading
+        return y
 
+    def get(self, request, grupo_id, *args, **kwargs):
         grupo = Grupo.objects.get(pk=grupo_id)
         tipo_analisis_textual = Tipo.objects.get(pk=1)  # Ajusta según tu lógica
 
@@ -216,25 +223,23 @@ class ReporteImagenesPDFView(View):
             y_text -= 15
 
             p.setFont("Helvetica", 10)
-            p.drawString(x_text, y_text, f"Descripción: {imagen.descripcion}")
-            y_text -= 30
+            y_text = self.draw_wrapped_text(p, f"Descripción: {imagen.descripcion}", x_text, y_text,
+                                            max_width=width - x_text - 40)
+            y_text -= 10
 
             analisis = imagen.analisis.filter(tipo=tipo_analisis_textual).first()
             texto_extraido = analisis.texto_extraido if analisis else "(No hay análisis textual)"
 
-            max_lines = 6
-            text_lines = texto_extraido.splitlines()[:max_lines]
-            for line in text_lines:
-                p.drawString(x_text, y_text, line)
-                y_text -= 12
+            p.setFont("Helvetica", 10)
+            y_text = self.draw_wrapped_text(p, texto_extraido, x_text, y_text, max_width=width - x_text - 40)
 
-            y -= max(img_height, 100) + 40
+            y -= max(img_height, y - y_text) + 40  # Ajuste vertical para evitar solapamiento
 
         p.save()
         pdf = buffer.getvalue()
         buffer.close()
 
         response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="reporte_grupo_{grupo_nombre}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="reporte_grupo_{grupo.nombre}.pdf"'
         response.write(pdf)
         return response

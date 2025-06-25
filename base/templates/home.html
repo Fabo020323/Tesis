@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="row">
+    <div class="row">
     <div class = "row">
         <div class="col-md-6 col-xl-4">
             <div class="card">
@@ -129,4 +129,53 @@
     </div>
 
 </div>
+    <div class="row">
+        <div class="col-12">
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-centered table-hover dt-responsive nowrap w-100"
+                                           id="grupo-datatable">
+                                        <thead>
+                                        <tr class="odd">
+                                            <th>Nombre</th>
+                                            <th>Descripción</th>
+                                            <th>Fecha de Creación</th>
+                                            {% if perms.envios.change_grupo or perms.envios.delete_grupo %}
+                                                <th class="text-center" style="width: 150px;">Acción</th>
+                                            {% endif %}
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for grupo in grupos %}
+                                            <tr>
+                                                <td>
+                                                    {{ grupo.nombre }}
+                                                    <br/>
+                                                    <p class="m-0 d-inline-block align-middle font-16">
+                                                        <b>{{ grupo.user }}</b>
+                                                        <br/>
+                                                        <small><b>{{ grupo.fecha_creacion }}</b></small>
+                                                    </p>
+                                                </td>
+                                                <td>{{ grupo.descripcion }}</td>
+                                                <td>{{ grupo.fecha_creacion }}</td>
+                                                    <td class="text-center">
+                                                            {% safe_url 'reporte_imagenes_pdf' grupo.pk as reporte_imagenes_pdf_url %}
+                                                            <a href="{{ reporte_imagenes_pdf_url }}"
+                                                               class="btn btn-outline-info rounded-pill waves-effect waves-light"
+                                                               style="border: none;">
+                                                                <i class="mdi mdi-text-box-search"></i>
+                                                            </a>
+                                                    </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% include 'pagination.html' %}
+                            </div>
+                        </div>
+                    </div>
+    </div>
 {% endblock %}

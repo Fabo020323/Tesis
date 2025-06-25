@@ -1,5 +1,6 @@
 from django.urls import path
 from base.modules.usuario.views import *
+from base.views import cambiar_contrasena_api
 
 urlpatterns = [
     path('', UsuarioListView.as_view(), name='usuarios_listado'),
@@ -8,5 +9,7 @@ urlpatterns = [
     path('eliminar/<int:pk>/', UsuarioDeleteView.as_view(), name='eliminar_usuario'),
     path('configuracion_usuario/', UsuarioConfiguracionView.as_view(), name='configuracion_usuario'),
     path('<int:pk>/datos/', UsuarioListdatosView.as_view(), name='usuario_datos'),
-    path('modal_password/',NuevaContrasennaView.as_view(), name='modal_password'),
+
+    path('api/cambiar_password/', cambiar_contrasena_api, name='api_cambiar_contrasena'),
+
 ]
