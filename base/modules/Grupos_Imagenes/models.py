@@ -17,3 +17,6 @@ class Grupo(models.Model):
 
     def __str__(self):
         return self.nombre
+
+    def cantidad_imaganes(self):
+        return self.imagenes.count()

@@ -47,7 +47,7 @@ class ImagenListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
             queryset = queryset.filter(grupo__nombre=grupo)
         if query:
             queryset = (queryset.filter(nombre__icontains=query))
-        return filter_query_date_range(date_range, queryset, 'fecha')
+        return filter_query_date_range(date_range, queryset, 'fecha_creacion')
 
 
 class ImagenCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):

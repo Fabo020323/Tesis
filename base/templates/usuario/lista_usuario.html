@@ -179,15 +179,15 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-4 mb-3">
-                                            <label for="id_username" class="form-label">Usuario</label>
+                                            <label for="id_username" class="form-label">Usuario(*)</label>
                                             {{ form.username }}
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <label for="id_first_name" class="form-label">Nombres</label>
+                                            <label for="id_first_name" class="form-label">Nombres(*)</label>
                                             {{ form.first_name }}
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <label for="id_last_name" class="form-label">Apellidos</label>
+                                            <label for="id_last_name" class="form-label">Apellidos(*)</label>
                                             {{ form.last_name }}
                                         </div>
 
@@ -202,14 +202,14 @@
                                             {{ form.telefono }}
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <label for="id_password" class="form-label">Contraseña</label>
+                                            <label for="id_password" class="form-label">Contraseña(*)</label>
                                             {{ form.password }}
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label for="id_group" class="form-label">Grupo</label>
-                                            <select name="group" class="form-control" autocomplete="off" required=""
+                                            <label for="id_group" class="form-label">Grupo(*)</label>
+                                            <select name="group" class="form-control" autocomplete="off" required
                                                     id="id_group">
                                                 {% for group in form.group %}
                                                     <option value={{ group.pk }}>{{ group }}</option>

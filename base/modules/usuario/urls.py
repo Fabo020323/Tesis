@@ -8,4 +8,5 @@ urlpatterns = [
     path('eliminar/<int:pk>/', UsuarioDeleteView.as_view(), name='eliminar_usuario'),
     path('configuracion_usuario/', UsuarioConfiguracionView.as_view(), name='configuracion_usuario'),
     path('<int:pk>/datos/', UsuarioListdatosView.as_view(), name='usuario_datos'),
+    path('modal_password/',NuevaContrasennaView.as_view(), name='modal_password'),
 ]

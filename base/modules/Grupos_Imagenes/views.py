@@ -1,9 +1,13 @@
 import os
+from io import BytesIO
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.paginator import Paginator
+from django.http import HttpResponse
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 from base.modules.Analisis.models import Analisis
 from base.modules.Grupos_Imagenes.forms import GrupoForm
@@ -15,6 +19,7 @@ from base.modules.Tipo.models import Tipo
 from base_Fabian import settings
 from base_Fabian.utils import update_paginate, filter_query_date_range
 from django.urls import reverse_lazy
+from PIL import Image as PilImage
 
 
 class GrupoListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
@@ -162,3 +167,74 @@ class ListImagenesGruposView(LoginRequiredMixin, PermissionRequiredMixin, Templa
         except Exception as e:
             messages.error(self.request, 'Ha ocurrido un error en la solicitud')
         return context
+
+
+class ReporteImagenesPDFView(View):
+    def get(self, request, grupo_id, *args, **kwargs):
+
+        grupo = Grupo.objects.get(pk=grupo_id)
+        tipo_analisis_textual = Tipo.objects.get(pk=1)  # Ajusta según tu lógica
+
+        imagenes = Imagen.objects.filter(grupo=grupo, analisis__tipo=tipo_analisis_textual).distinct()
+
+        buffer = BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        width, height = letter
+
+        y = height - 50
+        p.setFont("Helvetica-Bold", 16)
+        p.drawString(50, y, f"Reporte de imágenes del grupo: {grupo.nombre}")
+        y -= 40
+
+        for imagen in imagenes:
+            if y < 150:
+                p.showPage()
+                y = height - 50
+
+            # Imagen
+            if imagen.imagen:
+                try:
+                    img_path = imagen.imagen.path
+                    pil_img = PilImage.open(img_path)
+                    aspect = pil_img.width / pil_img.height
+                    img_width = 150
+                    img_height = img_width / aspect
+
+                    p.drawInlineImage(img_path, 50, y - img_height, width=img_width, height=img_height)
+                except Exception:
+                    p.drawString(50, y, "(Error al cargar imagen)")
+                    img_height = 0
+            else:
+                img_height = 0
+
+            # Texto al lado de la imagen
+            x_text = 220
+            y_text = y
+
+            p.setFont("Helvetica-Bold", 12)
+            p.drawString(x_text, y_text, f"Nombre: {imagen.nombre}")
+            y_text -= 15
+
+            p.setFont("Helvetica", 10)
+            p.drawString(x_text, y_text, f"Descripción: {imagen.descripcion}")
+            y_text -= 30
+
+            analisis = imagen.analisis.filter(tipo=tipo_analisis_textual).first()
+            texto_extraido = analisis.texto_extraido if analisis else "(No hay análisis textual)"
+
+            max_lines = 6
+            text_lines = texto_extraido.splitlines()[:max_lines]
+            for line in text_lines:
+                p.drawString(x_text, y_text, line)
+                y_text -= 12
+
+            y -= max(img_height, 100) + 40
+
+        p.save()
+        pdf = buffer.getvalue()
+        buffer.close()
+
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="reporte_grupo_{grupo_nombre}.pdf"'
+        response.write(pdf)
+        return response

@@ -6,7 +6,7 @@ from base.modules.usuario.models import CustomUser
 
 class UserForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(
-        attrs={'class': 'form-control', 'autocomplete': 'new-password', 'placeholder': 'contraseña'}), required=False)
+        attrs={'class': 'form-control', 'autocomplete': 'new-password', 'placeholder': 'contraseña'}), required=True)
     group = forms.ModelChoiceField(queryset=Group.objects.all(), required=True,
                                    widget=forms.Select(attrs={'class': 'form-control', 'autocomplete': 'off'}))
     is_active = forms.BooleanField(initial=True, required=False, widget=forms.CheckboxInput(
@@ -30,6 +30,13 @@ class UserForm(forms.ModelForm):
 
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['password'].required = True
+        self.fields['username'].required = True
+        self.fields['first_name'].required = True
+        self.fields['last_name'].required = True
+
     def save(self, commit=True):
         user = super(UserForm, self).save(commit=False)
         if self.cleaned_data['password']:
@@ -47,3 +54,18 @@ class ThemeSettingsForm(forms.ModelForm):
         model = CustomUser
         fields = ['theme_color_scheme', 'layout_mode', 'layout_width', 'topbar_color', 'menu_color', 'menu_icon',
                   'sidenav_size', 'sidebar_user_info', 'sidenav_twocolumn']
+
+class CambiarPasswordForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput(
+        attrs={'class': 'form-control', 'autocomplete': 'new-password', 'placeholder': 'contraseña'}))
+
+    class Meta:
+        model = CustomUser
+        fields = ['password', 'fecha_activacion']
+
+    def save(self, commit=True):
+        user = super(UserForm, self).save(commit=False)
+        user.set_password(self.cleaned_data['password'])
+        if commit:
+            user.save()
+        return user

@@ -2,11 +2,13 @@ import json
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.http import JsonResponse
 from django.core.mail import send_mail
+from django.utils import timezone
+
 from base.modules.usuario.models import CustomUser
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, View
-from base.modules.usuario.forms import UserForm, ThemeSettingsForm
+from base.modules.usuario.forms import UserForm, ThemeSettingsForm, CambiarPasswordForm
 from django.contrib.auth.models import Group
 from django.contrib import messages
 
@@ -195,3 +197,21 @@ class UsuarioListdatosView(LoginRequiredMixin, PermissionRequiredMixin, View):
             }
 
         return JsonResponse(data)
+
+
+class NuevaContrasennaView(UpdateView):
+    template_name = 'usuario/modal_password.html'
+    form_class = CambiarPasswordForm
+    success_url = reverse_lazy('base')
+
+    def get_object(self):
+        return self.request.user
+
+    def form_valid(self, form):
+        user = self.get_object()
+        user.set_password(form.cleaned_data['password'])
+        user.fecha_activacion = timezone.now()
+        user.save()
+        from django.contrib.auth import update_session_auth_hash
+        update_session_auth_hash(self.request, user)
+        return super().form_valid(form)

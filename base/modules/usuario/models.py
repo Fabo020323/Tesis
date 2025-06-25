@@ -17,6 +17,7 @@ class CustomUser(AbstractUser):
     sidenav_twocolumn = models.CharField(max_length=10, default='light')
     imagen = models.ImageField(upload_to='imagen_usuario/', blank=True, null=True, default='default/spiderman.jpg')
     telefono = models.CharField(max_length=10, default='', blank=True, null=False)
+    fecha_activacion = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         verbose_name = 'Usuario'
